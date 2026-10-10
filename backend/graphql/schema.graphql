@@ -1,0 +1,13 @@
+"""
+Lipidly API. Every operation requires a Cognito token; the user is always taken from the token.
+Operations are added step by step, following the backend plan's rollout.
+"""
+type Query {
+  "Health check: returns the signed-in user's ID and the server time."
+  ping: Ping!
+}
+
+type Ping {
+  userId: ID!
+  time: AWSDateTime!
+}

@@ -1,8 +1,22 @@
 {
   "app": "npx tsx bin/lipidly.ts",
   "watch": {
-    "include": ["**"],
-    "exclude": ["README.md", "cdk*.json", "**/*.d.ts", "**/*.js", "tsconfig.json", "package*.json", "node_modules"]
+    "include": [
+      "**"
+    ],
+    "exclude": [
+      "README.md",
+      "cdk*.json",
+      "**/*.d.ts",
+      "**/*.js",
+      "tsconfig.json",
+      "package*.json",
+      "node_modules"
+    ]
   },
-  "context": {}
+  "context": {
+    "lipidly:cognitoDomainPrefix": "lipidly",
+    "lipidly:googleClientId": "271639879295-lssq92oqubhc701aqk3p7bqepo3eihub.apps.googleusercontent.com",
+    "lipidly:googleClientSecretName": "lipidly/google-oauth"
+  }
 }

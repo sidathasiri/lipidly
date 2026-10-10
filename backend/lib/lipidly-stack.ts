@@ -1,13 +1,37 @@
 import * as cdk from 'aws-cdk-lib';
 import type { Construct } from 'constructs';
+import { Api } from './constructs/api.js';
+import { Auth } from './constructs/auth.js';
+import { Data } from './constructs/data.js';
+
+export interface LipidlyStackProps extends cdk.StackProps {
+  stage: string;
+}
 
 /**
- * Lipidly backend. Planned resources (see docs): Cognito (email/password + Google), AppSync,
- * one DynamoDB table (PK=USER#<sub>), S3 for report and prescription files, and Lambdas
- * that use @lipidly/rules and Bedrock. None are created yet.
+ * Lipidly backend, rollout step 1 (Foundation): storage, sign-in and the API.
+ * Lambdas and Bedrock arrive in later steps (see the backend plan).
  */
 export class LipidlyStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: LipidlyStackProps) {
     super(scope, id, props);
+    const { stage } = props;
+    const domainPrefix = this.node.getContext('lipidly:cognitoDomainPrefix') as string;
+
+    const data = new Data(this, 'Data', { stage });
+    const auth = new Auth(this, 'Auth', { stage, domainPrefix });
+    const api = new Api(this, 'Api', { stage, userPool: auth.userPool });
+
+    cdk.Tags.of(this).add('app', 'lipidly');
+    cdk.Tags.of(this).add('stage', stage);
+
+    // Values the app needs (non-secret).
+    new cdk.CfnOutput(this, 'Region', { value: this.region });
+    new cdk.CfnOutput(this, 'UserPoolId', { value: auth.userPool.userPoolId });
+    new cdk.CfnOutput(this, 'UserPoolClientId', { value: auth.client.userPoolClientId });
+    new cdk.CfnOutput(this, 'CognitoDomain', { value: `${auth.domain.domainName}.auth.${this.region}.amazoncognito.com` });
+    new cdk.CfnOutput(this, 'GraphqlUrl', { value: api.api.graphqlUrl });
+    new cdk.CfnOutput(this, 'TableName', { value: data.table.tableName });
+    new cdk.CfnOutput(this, 'BucketName', { value: data.bucket.bucketName });
   }
 }

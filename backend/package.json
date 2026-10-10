@@ -2,7 +2,7 @@
   "name": "@lipidly/backend",
   "version": "0.1.0",
   "private": true,
-  "description": "Lipidly AWS backend (CDK). Placeholder: the stack defines no resources yet.",
+  "description": "Lipidly AWS backend (CDK): storage, sign-in, API; Lambdas and Bedrock added step by step.",
   "scripts": {
     "cdk": "cdk",
     "synth": "cdk synth",
