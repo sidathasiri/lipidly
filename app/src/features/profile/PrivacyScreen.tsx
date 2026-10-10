@@ -24,8 +24,12 @@ export default function PrivacyScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await deleteAccount();
-          router.replace('/');
+          try {
+            await deleteAccount();
+            router.replace('/');
+          } catch (e) {
+            Alert.alert('Couldn\u2019t delete your account', e instanceof Error ? e.message : 'Please try again.');
+          }
         },
       },
     ]);

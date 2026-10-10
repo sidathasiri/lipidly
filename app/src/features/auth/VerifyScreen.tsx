@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { MOCK_CODE_HINT, resendCode, verifyEmail } from '@/state/actions/auth';
+import { CODE_HINT, resendCode, verifyEmail } from '@/state/actions/auth';
 import { useStore } from '@/state/store';
 import { Button, Callout, CodeInput, Screen, Text } from '@/ui';
 import { AuthHeader } from './AuthHeader';
@@ -9,7 +9,7 @@ const RESEND_SECONDS = 45;
 
 /** Email verification with six code boxes (reuses the design 02 pattern). */
 export default function VerifyScreen() {
-  const email = useStore((s) => (s.pendingEmail ? s.accounts[s.pendingEmail]?.email : undefined));
+  const email = useStore((s) => s.pendingEmail);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -25,8 +25,9 @@ export default function VerifyScreen() {
     setBusy(true);
     setError(undefined);
     try {
-      await verifyEmail(code);
-      router.replace('/');
+      const result = await verifyEmail(code);
+      if (result === 'signedIn') router.replace('/');
+      else router.replace('/auth/sign-in');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.');
     } finally {
@@ -43,7 +44,7 @@ export default function VerifyScreen() {
       footer={
         <>
           <Text variant="small" weight={400} color="muted" align="center">
-            {MOCK_CODE_HINT}
+            {CODE_HINT}
           </Text>
           <Button label="Verify" onPress={submit} loading={busy} disabled={code.length < 6} />
         </>

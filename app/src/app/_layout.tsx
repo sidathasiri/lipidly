@@ -1,3 +1,4 @@
+import '@/services/amplify';
 import { BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold } from '@expo-google-fonts/bricolage-grotesque';
 import { Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold, Figtree_800ExtraBold, useFonts } from '@expo-google-fonts/figtree';
 import { Stack } from 'expo-router';
@@ -5,7 +6,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useDevBoot } from '@/dev/devBoot';
+import { DEV_BOOT_ACTIVE, useDevBoot } from '@/dev/devBoot';
+import { restoreSession } from '@/state/actions/auth';
 import { useNotifications } from '@/services/notifications';
 import { useStore } from '@/state/store';
 import { colors } from '@/ui';
@@ -36,6 +38,11 @@ export default function RootLayout() {
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});
   }, [ready]);
+
+  // Keep the saved session in step with Cognito (signed out elsewhere, tokens gone, etc.).
+  useEffect(() => {
+    if (hydrated && !DEV_BOOT_ACTIVE) restoreSession();
+  }, [hydrated]);
 
   if (!ready || !booted) return null;
 

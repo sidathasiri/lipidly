@@ -116,7 +116,7 @@ export async function rescheduleAll(d: UserData) {
 
 /** Keeps scheduled reminders in sync with the store, and opens the right screen on tap. */
 export function useNotifications() {
-  const userData = useStore((s) => (s.sessionUserId ? s.data[s.sessionUserId] : undefined));
+  const userData = useStore((s) => (s.session ? s.data[s.session.id] : undefined));
 
   useEffect(() => {
     if (!userData?.onboarded) return;

@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { MOCK_CODE_HINT, requestPasswordReset, resetPassword } from '@/state/actions/auth';
+import { CODE_HINT, requestPasswordReset, resetPassword } from '@/state/actions/auth';
 import { Button, Callout, CodeInput, Screen, Text, TextField } from '@/ui';
 import { AuthHeader } from './AuthHeader';
 
@@ -64,7 +64,7 @@ export default function ForgotPasswordScreen() {
           <CodeInput value={code} onChange={setCode} />
           <TextField label="New password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" placeholder="At least 8 characters" />
           <Text variant="small" weight={400} color="muted">
-            {MOCK_CODE_HINT}
+            {CODE_HINT}
           </Text>
         </>
       )}

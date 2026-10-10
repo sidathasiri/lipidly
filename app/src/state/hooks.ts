@@ -6,12 +6,10 @@ import type { UserData } from './types';
 const EMPTY = emptyUserData();
 
 /** The signed-in user's data. */
-export const useUserData = (): UserData => useStore((s) => (s.sessionUserId && s.data[s.sessionUserId]) || EMPTY);
+export const useUserData = (): UserData => useStore((s) => (s.session && s.data[s.session.id]) || EMPTY);
 
-export const useAccount = () =>
-  useStore((s) => Object.values(s.accounts).find((a) => a.id === s.sessionUserId));
-
-export const useSession = () => useStore((s) => s.sessionUserId);
+/** The signed-in user, or undefined when signed out. */
+export const useAccount = () => useStore((s) => s.session);
 
 /** Commonly derived values for Home, Plan and Reports. */
 export function useOverview() {

@@ -30,15 +30,10 @@ export const emptyUserData = (): UserData => ({
   reminders: { ...DEFAULT_REMINDERS },
 });
 
-interface MockAccount extends Account {
-  password?: string;
-}
-
 interface StoreState {
-  /** Mock auth registry, keyed by lower-case email. Replaced by Cognito later. */
-  accounts: Record<string, MockAccount>;
-  sessionUserId?: string;
-  /** Pending email verification. */
+  /** The signed-in Cognito user (`id` = Cognito sub). Tokens themselves are kept by Amplify. */
+  session?: Account;
+  /** Email waiting for a verification or reset code. */
   pendingEmail?: string;
   data: Record<string, UserData>;
   /** Welcome slides seen on this device. */
@@ -51,11 +46,16 @@ interface StoreState {
  */
 export const useStore = create<StoreState>()(
   persist(
-    (): StoreState => ({ accounts: {}, data: {}, seenWelcome: false }),
+    (): StoreState => ({ data: {}, seenWelcome: false }),
     {
       name: 'lipidly-store-v1',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 1,
+      // v2: real Cognito sign-in replaced the mock account list; earlier sessions sign in again.
+      version: 2,
+      migrate: (persisted) => {
+        const old = (persisted ?? {}) as Partial<StoreState> & { accounts?: unknown; sessionUserId?: unknown };
+        return { data: old.data ?? {}, seenWelcome: old.seenWelcome ?? false };
+      },
     },
   ),
 );
@@ -65,17 +65,17 @@ export const setState = useStore.setState;
 
 /** Applies a change to the signed-in user's data. */
 export const updateUser = (fn: (d: UserData) => UserData | void) => {
-  const { sessionUserId, data } = getState();
-  if (!sessionUserId) return;
-  const current = data[sessionUserId] ?? emptyUserData();
+  const { session, data } = getState();
+  if (!session) return;
+  const current = data[session.id] ?? emptyUserData();
   const draft: UserData = JSON.parse(JSON.stringify(current));
   const next = fn(draft) ?? draft;
-  setState({ data: { ...data, [sessionUserId]: next } });
+  setState({ data: { ...data, [session.id]: next } });
 };
 
 export const currentUserData = (): UserData => {
-  const { sessionUserId, data } = getState();
-  return (sessionUserId && data[sessionUserId]) || emptyUserData();
+  const { session, data } = getState();
+  return (session && data[session.id]) || emptyUserData();
 };
 
-export type { MockAccount, StoreState };
+export type { StoreState };

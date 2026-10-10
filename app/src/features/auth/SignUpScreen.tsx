@@ -28,10 +28,13 @@ export default function SignUpScreen() {
   };
 
   const google = async () => {
-    setBusy(true);
-    await signInWithGoogle();
-    setBusy(false);
-    router.replace('/');
+    setError(undefined);
+    try {
+      await signInWithGoogle();
+      router.replace('/');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong.');
+    }
   };
 
   return (

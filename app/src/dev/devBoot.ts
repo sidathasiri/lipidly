@@ -23,7 +23,10 @@ export function takeDevStartRoute(): string | undefined {
 }
 const DEV_SCENARIO = __DEV__ ? process.env.EXPO_PUBLIC_DEV_SCENARIO : undefined;
 
-const DEV_KEY = 'dev@lipidly.local';
+const DEV_USER_ID = 'dev-local-user';
+
+/** True when the dev shortcut is on; the app then skips the Cognito session check. */
+export const DEV_BOOT_ACTIVE = !!DEV_ROUTE;
 
 const sampleDraft = (triglycerides: number, nonHdl: number) => ({
   id: newId('draft_'),
@@ -46,10 +49,10 @@ const sampleDraft = (triglycerides: number, nonHdl: number) => ({
 export function useDevBoot(ready: boolean): boolean {
   useEffect(() => {
     if (!ready || !DEV_ROUTE) return;
-    const key = DEV_KEY;
-    const { accounts, data } = getState();
-    const account = accounts[key] ?? { id: newId('u_'), email: key, name: 'Nimal Perera', provider: 'password' as const, verified: true, password: 'devpassword' };
-    setState({ accounts: { ...accounts, [key]: account }, sessionUserId: account.id, seenWelcome: true, data: { ...data, [account.id]: data[account.id] ?? emptyUserData() } });
+    // A local-only session: no Cognito sign-in, so screens can be opened offline with sample data.
+    const { data } = getState();
+    const account = { id: DEV_USER_ID, email: 'dev@lipidly.local', name: 'Nimal Perera', provider: 'password' as const, verified: true };
+    setState({ session: account, seenWelcome: true, data: { ...data, [account.id]: data[account.id] ?? emptyUserData() } });
     if (DEV_SCENARIO || !getState().data[account.id]?.onboarded) loadSampleData();
     if (DEV_SCENARIO === 'draft') setDraft(sampleDraft(286, 148));
     if (DEV_SCENARIO === 'proposal') {
@@ -63,5 +66,5 @@ export function useDevBoot(ready: boolean): boolean {
       confirmDraft(draft);
     }
   }, [ready]);
-  return useStore((s) => !DEV_ROUTE || (!!s.sessionUserId && s.sessionUserId === s.accounts[DEV_KEY]?.id));
+  return useStore((s) => !DEV_ROUTE || s.session?.id === DEV_USER_ID);
 }

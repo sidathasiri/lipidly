@@ -19,7 +19,7 @@ export default function SignInScreen() {
       await signIn(email, password);
       router.replace('/');
     } catch (e) {
-      if (e instanceof AuthError && e.message === 'unverified') router.push('/auth/verify');
+      if (e instanceof AuthError && e.code === 'unverified') router.push('/auth/verify');
       else setError(e instanceof Error ? e.message : 'Something went wrong.');
     } finally {
       setBusy(false);
@@ -27,10 +27,13 @@ export default function SignInScreen() {
   };
 
   const google = async () => {
-    setBusy(true);
-    await signInWithGoogle();
-    setBusy(false);
-    router.replace('/');
+    setError(undefined);
+    try {
+      await signInWithGoogle();
+      router.replace('/');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong.');
+    }
   };
 
   return (
