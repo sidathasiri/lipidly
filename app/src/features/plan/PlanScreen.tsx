@@ -2,9 +2,10 @@ import { MARKER_LABELS, addDays, weeklySummary } from '@lipidly/rules';
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { fmtDayMonth, fmtTime, fmtWeekdayDate } from '@/lib/format';
+import { MAX_OWN_HABITS, ownAsPlanHabits } from '@/state/actions/ownHabits';
 import { useOverview } from '@/state/hooks';
 import { today } from '@/state/ids';
-import { Button, Callout, Card, Chip, colors, ColouredHeader, Screen, ScreenState, Section, StatusChip, Text } from '@/ui';
+import { AddRow, Button, Callout, Card, Chip, colors, ColouredHeader, Screen, ScreenState, Section, StatusChip, Text } from '@/ui';
 import { HabitRow } from './HabitRow';
 
 /** The current plan: focus marker, habits, retest date and mode (11). */
@@ -39,7 +40,10 @@ export default function PlanScreen() {
   const value = focus && source ? source.values[focus] : undefined;
   const status = focus && source ? source.statuses[focus] : undefined;
   const habits = plan.habits.filter((h) => h.committed);
-  const week = weeklySummary(Object.values(data.checkIns), habits.map((h) => h.id), addDays(today(), -6));
+  const own = ownAsPlanHabits(data);
+  const week = weeklySummary(Object.values(data.checkIns), [...habits, ...own].map((h) => h.id), addDays(today(), -6));
+  const keptLine = (id: string, reminder?: string) =>
+    [`Kept ${week.keptDays[id] ?? 0} of 7 days`, reminder ? fmtTime(reminder) : null].filter(Boolean).join(' \u00b7 ');
 
   return (
     <Screen
@@ -99,10 +103,24 @@ export default function PlanScreen() {
             <HabitRow
               key={h.id}
               habit={h}
-              subtitle={h.source === 'doctor' ? undefined : [`Kept ${week.keptDays[h.id] ?? 0} of 7 days`, h.reminderTime ? fmtTime(h.reminderTime) : null].filter(Boolean).join(' · ')}
+              subtitle={h.source === 'doctor' ? undefined : keptLine(h.id, h.reminderTime)}
               onPress={() => router.push({ pathname: '/plan/habit/[id]', params: { id: h.id } })}
             />
           ))}
+        </View>
+      </Section>
+      <Section title="Your own habits">
+        <View style={{ gap: 8 }}>
+          {own.map((h) => (
+            <HabitRow key={h.id} habit={h} subtitle={keptLine(h.id, h.reminderTime)} onPress={() => router.push({ pathname: '/plan/own/[id]', params: { id: h.id } })} />
+          ))}
+          {own.length < MAX_OWN_HABITS && (
+            <AddRow
+              label="Add your own habit"
+              caption={own.length === 0 ? 'Track something extra in your check-in. It won\u2019t change your plan.' : `You can add ${MAX_OWN_HABITS - own.length} more.`}
+              onPress={() => router.push({ pathname: '/plan/own/[id]', params: { id: 'new' } })}
+            />
+          )}
         </View>
       </Section>
       <Card style={styles.retest}>

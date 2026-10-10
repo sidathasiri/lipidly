@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { plural } from '@/lib/format';
 import { useOverview } from '@/state/hooks';
+import { dailyHabits } from '@/state/actions/plan-builder';
 import { today } from '@/state/ids';
 import { Button, colors, Confetti, Mascot, radius, Screen, Text, WeekStrip } from '@/ui';
 
@@ -14,7 +15,7 @@ export default function CheckInDoneScreen() {
   const { data, plan } = useOverview();
   const day = date ?? today();
   const checkIn = data.checkIns[day];
-  const habits = plan?.habits.filter((h) => h.committed) ?? [];
+  const habits = dailyHabits(data, plan);
   const kept = habits.filter((h) => checkIn?.answers[h.id]).length;
   const missed = habits.find((h) => checkIn?.answers[h.id] === false);
   const week = weekDots(Object.keys(data.checkIns), today());

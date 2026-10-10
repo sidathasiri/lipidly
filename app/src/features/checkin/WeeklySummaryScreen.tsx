@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { fmtDayMonth, fmtMonth } from '@/lib/format';
 import { saveCheckIn } from '@/state/actions/tracking';
 import { useOverview } from '@/state/hooks';
+import { dailyHabits } from '@/state/actions/plan-builder';
 import { today } from '@/state/ids';
 import { Button, Callout, Card, colors, ProgressBar, Screen, ScreenState, Text, TextField, TopBar } from '@/ui';
 
@@ -26,7 +27,7 @@ export default function WeeklySummaryScreen() {
     );
   }
 
-  const habits = plan.habits.filter((h) => h.committed);
+  const habits = dailyHabits(data, plan);
   const summary = weeklySummary(Object.values(data.checkIns), habits.map((h) => h.id), start);
   const elapsed = Math.min(7, Math.round((Date.parse(t) - Date.parse(start)) / 86400000) + 1);
   const trickiest = habits.filter((h) => h.source === 'app').sort((a, b) => (summary.keptDays[a.id] ?? 0) - (summary.keptDays[b.id] ?? 0))[0];
@@ -64,9 +65,9 @@ export default function WeeklySummaryScreen() {
             <View style={styles.habitRow}>
               <Text variant="label" style={{ flex: 1 }}>
                 {h.title}
-                {h.source === 'doctor' && (
+                {h.source !== 'app' && (
                   <Text variant="small" color="muted">
-                    {' · doctor'}
+                    {h.source === 'doctor' ? ' · doctor' : ' · your own'}
                   </Text>
                 )}
               </Text>

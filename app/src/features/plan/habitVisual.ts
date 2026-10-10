@@ -9,6 +9,7 @@ import {
   Footprints,
   Salad,
   Soup,
+  Star,
   Stethoscope,
   UtensilsCrossed,
   Wheat,
@@ -33,9 +34,14 @@ const BY_ID: Record<string, { icon: LucideIcon; tone: Tone }> = {
   'gym-or-swim': { icon: Dumbbell, tone: 'sky' },
 };
 
+/** Small label naming where a habit came from: "From your doctor", "Your own", or none for app habits. */
+export const habitLabel = (h: Pick<PlanHabit, 'source'>): string | undefined =>
+  h.source === 'doctor' ? 'From your doctor' : h.source === 'own' ? 'Your own' : undefined;
+
 /** Icon and tile tone for a habit, consistent across Home, Plan, Check-in and summaries. */
 export function habitVisual(h: Pick<PlanHabit, 'source' | 'habitId'>): { icon: LucideIcon; tone: Tone } {
   if (h.source === 'doctor') return { icon: Stethoscope, tone: 'tint' };
+  if (h.source === 'own') return { icon: Star, tone: 'lilac' };
   const known = h.habitId ? BY_ID[h.habitId] : undefined;
   if (known) return known;
   const category = h.habitId ? habitById(h.habitId)?.category : undefined;

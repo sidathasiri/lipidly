@@ -34,7 +34,7 @@ interface DateFieldProps {
   maximumDate?: string;
   /** Where the picker opens when there is no value yet. */
   initial?: string;
-  /** Compact pill for list rows and reminder chips. */
+  /** Compact pill for list rows and reminder chips; `label` is then read by screen readers only. */
   compact?: boolean;
 }
 
@@ -76,7 +76,7 @@ export function DateField({ label, mode, value, onChange, display, placeholder =
 
   return (
     <View style={{ gap: 8 }}>
-      {label && <Text variant="label">{label}</Text>}
+      {label && !compact && <Text variant="label">{label}</Text>}
       {button}
       {open && Platform.OS === 'ios' && (
         <View style={styles.picker}>

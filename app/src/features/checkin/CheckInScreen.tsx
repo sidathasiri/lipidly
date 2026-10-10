@@ -7,14 +7,15 @@ import { saveCheckIn } from '@/state/actions/tracking';
 import { useOverview } from '@/state/hooks';
 import { today } from '@/state/ids';
 import { AnswerPair, Button, Card, ChipGroup, IconTile, ProgressBar, Screen, ScreenState, Text, TopBar } from '@/ui';
-import { habitVisual } from '../plan/habitVisual';
+import { dailyHabits } from '@/state/actions/plan-builder';
+import { habitLabel, habitVisual } from '../plan/habitVisual';
 
 /** One yes/no card per habit; Done unlocks when every habit is answered (08). */
 export default function CheckInScreen() {
   const { data, plan } = useOverview();
   const t = today();
   const [date, setDate] = useState<IsoDate>(t);
-  const habits = plan?.habits.filter((h) => h.committed) ?? [];
+  const habits = dailyHabits(data, plan);
   const [answers, setAnswers] = useState<Record<string, boolean>>(data.checkIns[t]?.answers ?? {});
 
   if (!plan || habits.length === 0) {
@@ -55,9 +56,9 @@ export default function CheckInScreen() {
             <View style={styles.q}>
               <IconTile icon={v.icon} tone={v.tone} size={38} />
               <View style={{ flex: 1 }}>
-                {h.source === 'doctor' && (
-                  <Text variant="overline" color="primary">
-                    From your doctor
+                {habitLabel(h) && (
+                  <Text variant="overline" color={h.source === 'own' ? 'onLilac' : 'primary'}>
+                    {habitLabel(h)}
                   </Text>
                 )}
                 <Text variant="label">{h.question}</Text>

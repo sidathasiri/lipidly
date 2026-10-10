@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { fmtTime } from '@/lib/format';
 import { updateReminders } from '@/state/actions/tracking';
+import { dailyHabits } from '@/state/actions/plan-builder';
 import { useOverview } from '@/state/hooks';
 import { Card, DateField, ListGroup, ListRow, Screen, Text, Toggle, TopBar } from '@/ui';
 
@@ -9,7 +10,9 @@ import { Card, DateField, ListGroup, ListRow, Screen, Text, Toggle, TopBar } fro
 export default function ReminderSettingsScreen() {
   const { data, plan } = useOverview();
   const r = data.reminders;
-  const nudges = plan?.habits.filter((h) => h.source === 'app' && h.reminderTime).map((h) => `${h.title} ${fmtTime(h.reminderTime!)}`) ?? [];
+  const nudges = dailyHabits(data, plan)
+    .filter((h) => h.source !== 'doctor' && h.reminderTime)
+    .map((h) => `${h.title} ${fmtTime(h.reminderTime!)}`);
 
   return (
     <Screen gap={12}>

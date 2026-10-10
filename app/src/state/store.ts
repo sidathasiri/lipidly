@@ -20,6 +20,7 @@ export const emptyUserData = (): UserData => ({
   reports: [],
   plans: [],
   doctorHabits: [],
+  ownHabits: [],
   checkIns: {},
   prescriptions: [],
   medicines: [],

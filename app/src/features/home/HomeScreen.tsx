@@ -4,6 +4,7 @@ import { AlertCircle, BookOpen, CalendarClock, ChevronRight, FlaskConical, Spark
 import { StyleSheet, View } from 'react-native';
 import { daysUntil, firstName, fmtLongDate, fmtTime, fmtWeekdayDate, greeting } from '@/lib/format';
 import { setTestReminder } from '@/state/actions/onboarding';
+import { dailyHabits } from '@/state/actions/plan-builder';
 import { useOverview } from '@/state/hooks';
 import { nowTime, today } from '@/state/ids';
 import {
@@ -36,7 +37,7 @@ export default function HomeScreen() {
   if (!latestReport) return <NoReportHome name={name} testReminder={data.testReminder} />;
 
   const todayCheckIn = data.checkIns[t];
-  const total = plan?.habits.filter((h) => h.committed).length ?? 0;
+  const total = dailyHabits(data, plan).length;
   const answered = todayCheckIn ? Object.keys(todayCheckIn.answers).length : 0;
   const focus = plan?.focus;
   const focusValue = focus ? latestReport.values[focus] : undefined;
@@ -178,8 +179,8 @@ export default function HomeScreen() {
 function nextReminder(data: ReturnType<typeof useOverview>['data'], plan: ReturnType<typeof useOverview>['plan']) {
   const now = nowTime();
   const items = [
-    ...(plan?.habits ?? [])
-      .filter((h) => h.source === 'app' && h.committed && h.reminderTime)
+    ...dailyHabits(data, plan)
+      .filter((h) => h.source !== 'doctor' && h.reminderTime)
       .map((h) => ({ title: h.title, time: h.reminderTime!, href: '/plan' as const, ...habitVisual(h) })),
     ...data.medicines
       .filter((m) => m.active)

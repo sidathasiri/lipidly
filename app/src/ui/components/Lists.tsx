@@ -1,4 +1,4 @@
-import { ChevronRight, type LucideIcon } from 'lucide-react-native';
+import { ChevronRight, Plus, type LucideIcon } from 'lucide-react-native';
 import { Children, Fragment, isValidElement, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Icon } from '../primitives/Icon';
@@ -124,6 +124,25 @@ export function ListRow({
   );
 }
 
+/** Dashed "+" tile and label for adding an item (design: "Add a meal photo", visit-summary add row). */
+export function AddRow({ label, caption, onPress }: { label: string; caption?: string; onPress: () => void }) {
+  return (
+    <Tap onPress={onPress} accessibilityLabel={label} accessibilityHint={caption} style={styles.addRow}>
+      <IconTile icon={Plus} tone="dashed" size={38} />
+      <View style={styles.rowText}>
+        <Text variant="bodyMedium" color="primary" weight={700}>
+          {label}
+        </Text>
+        {caption && (
+          <Text variant="small" weight={400} color="muted">
+            {caption}
+          </Text>
+        )}
+      </View>
+    </Tap>
+  );
+}
+
 /** Label / value rows in a white card: profile details, medicine fields, version info. */
 export function DetailList({ rows }: { rows: [label: string, value: string][] }) {
   return (
@@ -154,6 +173,7 @@ const styles = StyleSheet.create({
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   group: { backgroundColor: colors.surface, borderRadius: radius.card, paddingHorizontal: 16, paddingVertical: 4 },
   divider: { height: 1, backgroundColor: colors.surfaceSoft },
+  addRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6, paddingHorizontal: 4 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, minHeight: 56 },
   rowText: { flex: 1, gap: 2 },
   value: { maxWidth: 150, textAlign: 'right' },

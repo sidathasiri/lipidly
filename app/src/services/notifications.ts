@@ -2,7 +2,7 @@ import { addDays } from '@lipidly/rules';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { activePlan } from '@/state/actions/plan-builder';
+import { activePlan, dailyHabits } from '@/state/actions/plan-builder';
 import { today } from '@/state/ids';
 import { useStore } from '@/state/store';
 import type { UserData } from '@/state/types';
@@ -77,8 +77,8 @@ export async function rescheduleAll(d: UserData) {
     jobs.push(schedule('Time for today’s check-in. It takes under a minute.', '/check-in', daily(d.reminders.checkInTime)));
   }
   if (plan && d.reminders.habitNudges) {
-    plan.habits
-      .filter((h) => h.source === 'app' && h.committed && h.reminderTime && !inQuietHours(h.reminderTime, d))
+    dailyHabits(d, plan)
+      .filter((h) => h.source !== 'doctor' && h.reminderTime && !inQuietHours(h.reminderTime, d))
       .slice(0, 2)
       .forEach((h) => jobs.push(schedule('A small habit is coming up. You’ve got this.', '/plan', daily(h.reminderTime!))));
   }

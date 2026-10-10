@@ -13,7 +13,7 @@ export { Logo, type LogoVariant, type LogoTone } from './brand/Logo';
 export { Screen, TAB_BAR_SPACE } from './components/Screen';
 export { TopBar, StepPill, IconButton, ColouredHeader, onHeader, type HeaderTone } from './components/Headers';
 export { IconTile, DateTile, StatTile, SourceTile } from './components/Tiles';
-export { Section, ListGroup, ListRow, DetailList, Divider } from './components/Lists';
+export { Section, ListGroup, ListRow, DetailList, AddRow, Divider } from './components/Lists';
 export { Callout, ScreenState, OfflineBanner } from './components/Feedback';
 export { ProgressBar, ProgressRing, DayDot, WeekStrip, MonthCalendar, PageDots } from './components/Progress';
 export { RangeGauge, TrendChart } from './components/Charts';

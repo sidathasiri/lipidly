@@ -63,7 +63,8 @@ export interface Report extends DraftReport {
 
 export interface PlanHabit {
   id: string;
-  source: 'app' | 'doctor';
+  /** `own` = a habit the user added (F4.15); never used by the plan rules. */
+  source: 'app' | 'doctor' | 'own';
   /** Library habit (app habits). */
   habitId?: string;
   title: string;
@@ -90,6 +91,14 @@ export interface Plan {
   lastSwap?: IsoDate;
   /** Set when this plan follows an escalation: doctor habits only, no app habits. */
   escalationId?: string;
+}
+
+/** A habit the user adds themselves (spec F4.15–F4.17). Kept per user so it carries over between plans. */
+export interface OwnHabit {
+  id: string;
+  title: string;
+  question: string;
+  reminderTime?: string;
 }
 
 export interface DoctorHabit {
@@ -181,6 +190,8 @@ export interface UserData {
   draft?: DraftReport;
   plans: Plan[];
   doctorHabits: DoctorHabit[];
+  /** Missing in data saved before own habits existed; read through `ownHabitsOf`. */
+  ownHabits?: OwnHabit[];
   checkIns: Record<IsoDate, CheckIn>;
   prescriptions: Prescription[];
   medicines: Medicine[];

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { PlanHabit } from '@/state/types';
 import { colors, Icon, IconTile, Tap, Text } from '@/ui';
-import { habitVisual } from './habitVisual';
+import { habitLabel, habitVisual } from './habitVisual';
 
 interface HabitRowProps {
   habit: PlanHabit;
@@ -16,19 +16,20 @@ interface HabitRowProps {
 /** One habit card: icon tile, title, subtitle. Doctor habits sit on a tint card with an overline. */
 export function HabitRow({ habit, subtitle, trailing, onPress }: HabitRowProps) {
   const doctor = habit.source === 'doctor';
+  const label = habitLabel(habit);
   const v = habitVisual(habit);
   return (
     <Tap
       onPress={onPress}
       disabled={!onPress}
-      accessibilityLabel={[doctor ? 'From your doctor' : null, habit.title, subtitle].filter(Boolean).join(', ')}
+      accessibilityLabel={[label, habit.title, subtitle].filter(Boolean).join(', ')}
       style={[styles.card, { backgroundColor: doctor ? colors.primaryTint : colors.surface }]}
     >
       <IconTile icon={v.icon} tone={doctor ? 'white' : v.tone} size={40} />
       <View style={styles.text}>
-        {doctor && (
-          <Text variant="overline" color="onPrimaryTint">
-            From your doctor
+        {label && (
+          <Text variant="overline" color={doctor ? 'onPrimaryTint' : 'onLilac'}>
+            {label}
           </Text>
         )}
         <Text variant="bodyStrong">{habit.title}</Text>

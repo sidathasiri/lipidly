@@ -63,6 +63,7 @@ export function loadSampleData() {
   const doctorHabit = { id: newId('dh_'), text: 'Alcohol-free days', question: 'Was today alcohol-free?', conflictKeys: ['alcohol'] };
   const habits = ['no-sugary-drinks', 'half-rice-dinner', 'brisk-walk-30'].map((id) => appPlanHabit(habitById(id)!, true));
   const planHabits = [...habits, { id: `doc_${doctorHabit.id}`, source: 'doctor' as const, title: doctorHabit.text, question: doctorHabit.question, committed: true }];
+  const ownHabit = { id: newId('own_'), title: 'Drink 8 glasses of water', question: 'Did you drink 8 glasses of water today?' };
   const startDate = addDays(t, -16);
 
   // Check-ins for the past two weeks: most days, with a gap three days ago.
@@ -70,7 +71,7 @@ export function loadSampleData() {
   for (let i = 1; i <= 15; i++) {
     if (i === 3 || i === 11) continue;
     const date = addDays(t, -i);
-    checkIns[date] = { date, answers: Object.fromEntries(planHabits.map((h, j) => [h.id, (i + j) % 4 !== 0])) };
+    checkIns[date] = { date, answers: Object.fromEntries([...planHabits, ownHabit].map((h, j) => [h.id, (i + j) % 4 !== 0])) };
   }
 
   const rxId = newId('rx_');
@@ -103,6 +104,7 @@ export function loadSampleData() {
       },
     ],
     doctorHabits: [doctorHabit],
+    ownHabits: [ownHabit],
     checkIns,
     prescriptions: [{ id: rxId, date: addDays(t, -9), doctor: 'Dr. S. Fernando', confirmedAt: new Date().toISOString() }],
     medicines: [atorva, vitd],
