@@ -30,6 +30,7 @@
       "favicon": "./assets/brand/png/logo-mark-1024.png"
     },
     "plugins": [
+      "./plugins/withSceneLifecycle",
       "./plugins/withoutPushEntitlement",
       "expo-router",
       "expo-font",
