@@ -1,5 +1,6 @@
 import * as Auth from 'aws-amplify/auth';
-import { emptyUserData, getState, setState } from '../store';
+import { deleteAccountOnServer, OfflineError } from '@/services/api';
+import { emptyUserData, getState, isSyncedSession, setState } from '../store';
 import type { Account } from '../types';
 
 /**
@@ -52,7 +53,8 @@ async function establishSession() {
     id: user.userId,
     email: attrs.email ?? known?.email ?? user.signInDetails?.loginId ?? '',
     name: attrs.name ?? known?.name ?? '',
-    provider: 'password',
+    // Federated users are named <provider>_<id> by Cognito.
+    provider: user.username.startsWith('google_') ? 'google' : 'password',
     verified: true,
   };
   const { data } = getState();
@@ -120,9 +122,20 @@ export async function signIn(email: string, password: string) {
   }
 }
 
-/** Google sign-in arrives in rollout step 7 (Cognito federation). */
+/**
+ * Google through Cognito's hosted sign-in, in the system browser sheet. Resolves once signed in;
+ * throws `AuthError` with code `cancelled` when the user closes the sheet.
+ */
 export async function signInWithGoogle(): Promise<void> {
-  throw new AuthError('Google sign-in is coming soon. Please use your email for now.', 'unavailable');
+  try {
+    await Auth.signInWithRedirect({ provider: 'Google' });
+    await establishSession();
+  } catch (e) {
+    const name = (e as { name?: string })?.name ?? '';
+    if (name === 'UserAlreadyAuthenticatedException') return establishSession();
+    if (/cancel/i.test(name) || /cancel/i.test((e as Error)?.message ?? '')) throw new AuthError('Sign-in was cancelled.', 'cancelled');
+    throw friendly(e);
+  }
 }
 
 export async function requestPasswordReset(email: string) {
@@ -153,19 +166,23 @@ export function signOut() {
 }
 
 /**
- * Deletes the Cognito user and this phone's copy of their data (F12.3).
- * From rollout step 7 a Lambda also removes their table items and files.
+ * Deletes the account (F12.3): the server removes the user's records, files and Cognito user,
+ * then this phone forgets their data. Needs a connection.
  */
 export async function deleteAccount() {
-  try {
-    await Auth.deleteUser();
-  } catch (e) {
-    throw friendly(e);
+  const { session } = getState();
+  if (!session) return;
+  if (isSyncedSession()) {
+    try {
+      await deleteAccountOnServer();
+    } catch (e) {
+      throw e instanceof OfflineError ? new AuthError(e.message) : friendly(e);
+    }
   }
-  const { session, data } = getState();
-  const next = { ...data };
-  if (session) delete next[session.id];
-  setState({ session: undefined, data: next });
+  const { data, outbox, syncedAt } = getState();
+  const drop = <T,>(m: Record<string, T>) => Object.fromEntries(Object.entries(m).filter(([k]) => k !== session.id));
+  setState({ session: undefined, data: drop(data), outbox: drop(outbox), syncedAt: drop(syncedAt) });
+  Auth.signOut().catch(() => {});
 }
 
 /** On launch: keep the stored session only if Cognito still has a signed-in user, and vice versa. */

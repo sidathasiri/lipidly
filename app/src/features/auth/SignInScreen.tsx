@@ -32,6 +32,7 @@ export default function SignInScreen() {
       await signInWithGoogle();
       router.replace('/');
     } catch (e) {
+      if (e instanceof AuthError && e.code === 'cancelled') return;
       setError(e instanceof Error ? e.message : 'Something went wrong.');
     }
   };

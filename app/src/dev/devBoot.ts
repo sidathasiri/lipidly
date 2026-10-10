@@ -3,7 +3,7 @@ import { addDays } from '@lipidly/rules';
 import { confirmDraft, setDraft } from '@/state/actions/reports';
 import { newId, today } from '@/state/ids';
 import { loadSampleData } from '@/state/sample-data';
-import { emptyUserData, getState, setState, useStore } from '@/state/store';
+import { emptyUserData, getState, LOCAL_USER_ID, setState, useStore } from '@/state/store';
 
 /**
  * Development only. Start Metro with `EXPO_PUBLIC_DEV_ROUTE=/home` (any route) to sign in as a
@@ -23,7 +23,7 @@ export function takeDevStartRoute(): string | undefined {
 }
 const DEV_SCENARIO = __DEV__ ? process.env.EXPO_PUBLIC_DEV_SCENARIO : undefined;
 
-const DEV_USER_ID = 'dev-local-user';
+const DEV_USER_ID = LOCAL_USER_ID;
 
 /** True when the dev shortcut is on; the app then skips the Cognito session check. */
 export const DEV_BOOT_ACTIVE = !!DEV_ROUTE;
@@ -58,12 +58,12 @@ export function useDevBoot(ready: boolean): boolean {
     if (DEV_SCENARIO === 'proposal') {
       const draft = sampleDraft(240, 170);
       setDraft(draft);
-      confirmDraft(draft);
+      void confirmDraft(draft);
     }
     if (DEV_SCENARIO === 'escalation') {
       const draft = sampleDraft(540, 184);
       setDraft(draft);
-      confirmDraft(draft);
+      void confirmDraft(draft);
     }
   }, [ready]);
   return useStore((s) => !DEV_ROUTE || s.session?.id === DEV_USER_ID);

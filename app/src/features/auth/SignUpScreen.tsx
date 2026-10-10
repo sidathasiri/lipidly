@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { signInWithGoogle, signUp } from '@/state/actions/auth';
+import { AuthError, signInWithGoogle, signUp } from '@/state/actions/auth';
 import { Button, Callout, colors, Screen, Text, TextField } from '@/ui';
 import { AuthHeader } from './AuthHeader';
 import { GoogleButton } from './GoogleButton';
@@ -33,6 +33,7 @@ export default function SignUpScreen() {
       await signInWithGoogle();
       router.replace('/');
     } catch (e) {
+      if (e instanceof AuthError && e.code === 'cancelled') return;
       setError(e instanceof Error ? e.message : 'Something went wrong.');
     }
   };

@@ -1,13 +1,90 @@
 """
 Lipidly API. Every operation requires a Cognito token; the user is always taken from the token.
-Operations are added step by step, following the backend plan's rollout.
+
+The phone keeps the user's data locally and syncs it as records (see @lipidly/domain records.ts).
+Simple user choices are written with putRecords; anything the rule engine decides (profile
+escalation, reports, plans, prescriptions) goes through a server operation that returns the
+records it changed.
 """
 type Query {
   "Health check: returns the signed-in user's ID and the server time."
   ping: Ping!
+  "Records changed after `since` (all records when omitted), a page at a time."
+  sync(since: String, nextToken: String): SyncPage!
+  "A document reading started with startReading."
+  readingJob(id: ID!): ReadingJob
+  "A short-lived link to view an uploaded original."
+  fileUrl(key: String!): String!
+}
+
+type Mutation {
+  "Client-writable records: settings, consent, own habits, check-ins, medicines, doses, appointments."
+  putRecords(records: [RecordInput!]!): [DataRecord!]!
+  saveProfile(profile: AWSJSON!, today: AWSDate!): MutationResult!
+  "A PlanAction from @lipidly/domain (commit, swap, start, retest, reminder)."
+  planAction(action: AWSJSON!, today: AWSDate!): MutationResult!
+  confirmReport(draft: AWSJSON!, edited: AWSJSON!, today: AWSDate!): MutationResult!
+  confirmPrescription(prescription: AWSJSON!, today: AWSDate!): MutationResult!
+  "A presigned PUT for one file (JPEG, PNG or PDF), valid for 5 minutes."
+  createUploadUrl(kind: FileKind!, contentType: String!): UploadTarget!
+  "Reads uploaded files with Claude on Bedrock. Poll readingJob for the result."
+  startReading(kind: FileKind!, fileKeys: [String!]!): ReadingJob!
+  "Deletes all of the user's data and files, then the sign-in account."
+  deleteAccount: Boolean!
 }
 
 type Ping {
   userId: ID!
   time: AWSDateTime!
+}
+
+enum FileKind {
+  report
+  prescription
+}
+
+type DataRecord {
+  sk: String!
+  type: String!
+  data: AWSJSON
+  deleted: Boolean
+  updatedAt: String!
+}
+
+input RecordInput {
+  sk: String!
+  type: String!
+  data: AWSJSON
+  deleted: Boolean
+}
+
+type SyncPage {
+  records: [DataRecord!]!
+  nextToken: String
+}
+
+type MutationResult {
+  records: [DataRecord!]!
+  "Operation-specific details, e.g. { reportId, escalated } or { ok, opensOn }."
+  info: AWSJSON
+}
+
+type UploadTarget {
+  key: String!
+  url: String!
+}
+
+enum JobStatus {
+  pending
+  done
+  failed
+}
+
+type ReadingJob {
+  id: ID!
+  kind: FileKind!
+  status: JobStatus!
+  "The extracted report or prescription, when done."
+  result: AWSJSON
+  error: String
 }

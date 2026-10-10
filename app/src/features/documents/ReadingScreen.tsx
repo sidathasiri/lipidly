@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { extractPrescription, extractReport, type ExtractionStep } from '@/services/extraction';
+import { readPrescription, readReport, ReadingError, type ExtractionStep } from '@/services/documents';
 import { setDraft } from '@/state/actions/reports';
 import { useUserData } from '@/state/hooks';
 import type { ReportSource } from '@/state/types';
@@ -24,12 +24,12 @@ const ORDER: ExtractionStep[] = ['uploading', 'reading', 'checking'];
 
 /** Waiting for extraction: progress, step rows, Cancel (18). */
 export default function ReadingScreen() {
-  const params = useLocalSearchParams<{ kind?: string; source?: string; uri?: string; pages?: string }>();
+  const params = useLocalSearchParams<{ kind?: string; source?: string; uris?: string }>();
   const kind = params.kind === 'prescription' ? 'prescription' : 'report';
   const existing = useUserData().reports.length;
   const [step, setStep] = useState<ExtractionStep>('uploading');
   const [progress, setProgress] = useState(0.05);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string>();
   const abort = useRef<AbortController | null>(null);
 
   const start = () => {
@@ -38,23 +38,28 @@ export default function ReadingScreen() {
       setStep(s);
       setProgress(p);
     };
+    const source = (params.source as ReportSource) ?? 'camera';
+    const uris: string[] = params.uris ? JSON.parse(params.uris) : [];
     const job =
       kind === 'report'
-        ? extractReport({ source: (params.source as ReportSource) ?? 'camera', fileUri: params.uri || undefined, pageCount: Number(params.pages) || undefined, existingReports: existing }, onStep, abort.current.signal).then((draft) => {
+        ? readReport({ source, uris, existingReports: existing }, onStep, abort.current.signal).then((draft) => {
             setDraft(draft);
             router.replace('/reports/confirm');
           })
-        : extractPrescription(onStep, abort.current.signal).then((rx) => {
+        : readPrescription({ uris, isPdf: source === 'pdf' }, onStep, abort.current.signal).then((rx) => {
             setPendingPrescription(rx);
             router.replace('/medicines/confirm');
           });
     job.catch((e: Error) => {
-      if (e.message !== 'cancelled') setError(true);
+      if (e.message === 'cancelled') return;
+      setError(e instanceof ReadingError ? e.message : 'Try a clearer photo in good light, upload the PDF, or enter the values by hand.');
     });
   };
 
   const retry = () => {
-    setError(false);
+    setError(undefined);
+    setStep('uploading');
+    setProgress(0.05);
     start();
   };
 
@@ -99,7 +104,7 @@ export default function ReadingScreen() {
           <Text variant="h1" align="center">
             We couldn't read this one
           </Text>
-          <Callout tone="soft">Try a clearer photo in good light, upload the PDF, or enter the values by hand.</Callout>
+          <Callout tone="soft">{error}</Callout>
           <Button label="Try again" onPress={retry} />
         </>
       ) : (

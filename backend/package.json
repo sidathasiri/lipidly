@@ -9,12 +9,23 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.164",
     "@types/node": "^26.6.5",
     "aws-cdk": "^2.1145.0",
+    "esbuild": "^0.28.2",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
   "dependencies": {
+    "@anthropic-ai/bedrock-sdk": "^0.34.4",
+    "@aws-sdk/client-cognito-identity-provider": "^3.1149.0",
+    "@aws-sdk/client-dynamodb": "^3.1149.0",
+    "@aws-sdk/client-lambda": "^3.1149.0",
+    "@aws-sdk/client-s3": "^3.1149.0",
+    "@aws-sdk/lib-dynamodb": "^3.1149.0",
+    "@aws-sdk/s3-request-presigner": "^3.1149.0",
+    "@lipidly/domain": "*",
+    "@lipidly/rules": "*",
     "aws-cdk-lib": "^2.273.0",
     "constructs": "^10.8.1"
   }

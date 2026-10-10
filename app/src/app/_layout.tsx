@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DEV_BOOT_ACTIVE, useDevBoot } from '@/dev/devBoot';
 import { restoreSession } from '@/state/actions/auth';
 import { useNotifications } from '@/services/notifications';
+import { useSync } from '@/services/sync';
 import { useStore } from '@/state/store';
 import { colors } from '@/ui';
 
@@ -33,6 +34,7 @@ export default function RootLayout() {
   const hydrated = useHydrated();
   const ready = fontsLoaded && hydrated;
   useNotifications();
+  useSync();
   const booted = useDevBoot(ready);
 
   useEffect(() => {

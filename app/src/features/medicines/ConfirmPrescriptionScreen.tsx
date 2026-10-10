@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fmtDate, fmtTime } from '@/lib/format';
-import type { ExtractedMedicine } from '@/services/extraction';
+import { today } from '@/state/ids';
+import type { ExtractedMedicine } from '@/state/types';
 import { reportProblem } from '@/services/support';
 import { confirmPrescription } from '@/state/actions/tracking';
 import { Button, Card, colors, DateField, DocumentPreview, FieldBox, ScreenState, StepPill, Tap, Text, Toggle, TopBar } from '@/ui';
@@ -30,6 +31,7 @@ export default function ConfirmPrescriptionScreen() {
   const [open, setOpen] = useState(0);
   const [addHabit, setAddHabit] = useState(true);
   const [addFollowUp, setAddFollowUp] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   if (!rx) {
     return (
@@ -56,16 +58,24 @@ export default function ConfirmPrescriptionScreen() {
       },
     ]);
 
-  const confirm = () => {
-    confirmPrescription({
-      doctor: rx.doctor,
-      date: rx.date,
-      medicines: meds,
-      doctorInstruction: addHabit ? rx.doctorInstruction : undefined,
-      followUp: addFollowUp ? rx.followUp : undefined,
-    });
-    setPendingPrescription(undefined);
-    router.dismissTo('/medicines');
+  const confirm = async () => {
+    setSaving(true);
+    try {
+      await confirmPrescription({
+        doctor: rx.doctor,
+        date: rx.date || today(),
+        medicines: meds,
+        doctorInstruction: addHabit ? rx.doctorInstruction : undefined,
+        followUp: addFollowUp ? rx.followUp : undefined,
+        fileKeys: rx.fileKeys,
+      });
+      setPendingPrescription(undefined);
+      router.dismissTo('/medicines');
+    } catch (e) {
+      Alert.alert('Couldn\u2019t save the prescription', e instanceof Error ? e.message : 'Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -146,7 +156,7 @@ export default function ConfirmPrescriptionScreen() {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
-        <Button label={`Confirm ${meds.length} ${meds.length === 1 ? 'medicine' : 'medicines'}`} onPress={confirm} disabled={totalBlanks > 0} />
+        <Button label={`Confirm ${meds.length} ${meds.length === 1 ? 'medicine' : 'medicines'}`} onPress={confirm} disabled={totalBlanks > 0 || saving} loading={saving} />
         <View style={styles.notes}>
           <Text variant="caption" weight={600} color="muted">
             {totalBlanks > 0 ? 'Fill the blank to continue' : 'Nothing is saved until you confirm'}

@@ -45,7 +45,7 @@ export default function CaptureScreen() {
   };
 
   const done = () =>
-    router.replace({ pathname: '/reading', params: { kind, source: 'camera', uri: pages[0] ?? '', pages: String(pages.length) } });
+    router.replace({ pathname: '/reading', params: { kind, source: 'camera', uris: JSON.stringify(pages) } });
 
   return (
     <View style={styles.root}>

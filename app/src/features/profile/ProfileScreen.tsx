@@ -6,6 +6,7 @@ import { signOut } from '@/state/actions/auth';
 import { useAccount, useUserData } from '@/state/hooks';
 import { today } from '@/state/ids';
 import { loadSampleData } from '@/state/sample-data';
+import { isSyncedSession } from '@/state/store';
 import { colors, ColouredHeader, DetailList, ListGroup, ListRow, Screen, Text } from '@/ui';
 import { ALCOHOL_OPTIONS, CONDITION_OPTIONS, labelOf, MEDICINE_OPTIONS, SEX_OPTIONS, SMOKING_OPTIONS, TIME_OPTIONS } from '../onboarding/options';
 
@@ -82,7 +83,8 @@ export default function ProfileScreen() {
             router.replace('/');
           }}
         />
-        {__DEV__ && (
+        {/* Sample data is local only (it isn't on the server), so it's offered to the developer account only. */}
+        {__DEV__ && !isSyncedSession() && (
           <ListRow
             icon={Database}
             iconTone="soft"

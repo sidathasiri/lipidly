@@ -1,8 +1,8 @@
-import { profileEscalation, type LifestyleAnswers } from '@lipidly/rules';
+import { saveProfile as applyProfile } from '@lipidly/domain';
+import type { LifestyleAnswers } from '@lipidly/rules';
 import { newId, today } from '../ids';
-import { setState, updateUser } from '../store';
+import { currentUserData, enqueue, isSyncedSession, setState, updateUser } from '../store';
 import type { UserProfile } from '../types';
-import { applyEscalation } from './plan-builder';
 
 export const POLICY_VERSION = 'privacy-2026-10';
 
@@ -22,20 +22,25 @@ export function withdrawConsent() {
   });
 }
 
-/** Saves profile answers. Escalation rules re-run on every profile change (F11.1). */
+/**
+ * Saves profile answers. Escalation rules re-run on every profile change (F11.1): on the server,
+ * which sends back any escalation it opens. The local developer account runs them on the phone.
+ */
 export function saveProfile(profile: UserProfile) {
+  const t = today();
+  if (!isSyncedSession()) {
+    updateUser((d) => applyProfile(d, profile, t));
+    return;
+  }
   updateUser((d) => {
-    const hadConditions = (d.profile?.conditions.length ?? 0) > 0;
     d.profile = profile;
-    const esc = profileEscalation(profile);
-    if (esc && !hadConditions && d.reports.length > 0) applyEscalation(d, { ...esc, id: newId('esc_'), date: today() });
   });
+  enqueue({ id: newId('op_'), op: 'saveProfile', variables: { profile, today: t } });
 }
 
 export function saveLifestyle(lifestyle: LifestyleAnswers) {
-  updateUser((d) => {
-    if (d.profile) d.profile.lifestyle = lifestyle;
-  });
+  const profile = currentUserData().profile;
+  if (profile) saveProfile({ ...profile, lifestyle });
 }
 
 export function finishOnboarding() {

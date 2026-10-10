@@ -1,7 +1,6 @@
 import type { IsoDate } from '@lipidly/rules';
 
-export const newId = (prefix = ''): string =>
-  `${prefix}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+export { newId } from '@lipidly/domain';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 

@@ -1,13 +1,12 @@
 import { addDays, type IsoDate } from '@lipidly/rules';
 import { newId, today } from '@/state/ids';
-import type { DraftReport, ReportSource, StoredMarker } from '@/state/types';
+import type { ExtractionStep } from '@/services/documents';
+import type { DraftReport, ExtractedPrescription, ReportSource, StoredMarker } from '@/state/types';
 
 /**
- * Mock document reading. The real version uploads the file to S3 and the backend reads it
- * with a vision model on Bedrock. Values here are sample data so the confirm flow can be tried.
+ * Development only: sample reading results for the local developer account (dev/devBoot.ts),
+ * which has no sign-in and so can't call the backend. Real accounts use services/documents.ts.
  */
-
-export type ExtractionStep = 'uploading' | 'reading' | 'checking';
 
 const wait = (ms: number, signal?: AbortSignal) =>
   new Promise<void>((resolve, reject) => {
@@ -53,25 +52,6 @@ export async function extractReport(
     fileUri: input.fileUri,
     pageCount: input.pageCount ?? 2,
   };
-}
-
-export interface ExtractedMedicine {
-  name: string;
-  strength: string;
-  dose: string;
-  frequency: string;
-  timing: string;
-  /** Empty = couldn't read with confidence; the user must fill it (F7.4). */
-  duration: string;
-  times: string[];
-}
-
-export interface ExtractedPrescription {
-  doctor: string;
-  date: IsoDate;
-  medicines: ExtractedMedicine[];
-  doctorInstruction?: { text: string; question: string; conflictKeys: string[] };
-  followUp?: string;
 }
 
 export async function extractPrescription(onStep: (step: ExtractionStep, progress: number) => void, signal?: AbortSignal): Promise<ExtractedPrescription> {

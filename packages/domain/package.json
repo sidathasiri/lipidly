@@ -1,0 +1,14 @@
+{
+  "name": "@lipidly/domain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lipidly data model and the changes made to it. Pure functions shared by the app (instant, offline) and the backend Lambdas (authoritative).",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lipidly/rules": "*"
+  }
+}

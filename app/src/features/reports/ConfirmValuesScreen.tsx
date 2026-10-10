@@ -39,6 +39,7 @@ export default function ConfirmValuesScreen() {
   const [labName, setLabName] = useState(draft?.labName ?? '');
   const [date, setDate] = useState(draft?.collectionDate ?? today());
   const [editMeta, setEditMeta] = useState(manual);
+  const [saving, setSaving] = useState(false);
   const [unit, setUnit] = useState<Unit>(draft?.markers[0]?.unit ?? 'mg/dL');
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries((draft?.markers ?? []).map((m) => [m.marker, toText(m.value)])),
@@ -85,10 +86,17 @@ export default function ConfirmValuesScreen() {
       },
     ]);
 
-  const confirm = () => {
-    const { reportId, escalated } = confirmDraft({ labName, collectionDate: date, markers });
-    if (escalated) router.replace('/reports/doctor');
-    else router.replace({ pathname: '/reports/[id]', params: { id: reportId, fresh: '1' } });
+  const confirm = async () => {
+    setSaving(true);
+    try {
+      const { reportId, escalated } = await confirmDraft({ labName, collectionDate: date, markers });
+      if (escalated) router.replace('/reports/doctor');
+      else router.replace({ pathname: '/reports/[id]', params: { id: reportId, fresh: '1' } });
+    } catch (e) {
+      Alert.alert('Couldn\u2019t save the report', e instanceof Error ? e.message : 'Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const firstFlagIndex = markers.findIndex((m) => flagFor(m.marker));
@@ -172,7 +180,7 @@ export default function ConfirmValuesScreen() {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
-        <Button label="Confirm values" onPress={confirm} disabled={filled < 2} />
+        <Button label="Confirm values" onPress={confirm} disabled={filled < 2 || saving} loading={saving} />
         <View style={styles.footNotes}>
           <Text variant="caption" weight={600} color="muted">
             Nothing is saved until you confirm

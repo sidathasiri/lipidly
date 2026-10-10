@@ -1,10 +1,11 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import { useState } from 'react';
-import { ScrollView, Share, StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Linking, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fmtDate } from '@/lib/format';
+import { fileUrl } from '@/services/api';
 import { useUserData } from '@/state/hooks';
 import { Button, colors, DocumentPreview, Icon, IconButton, Tap, Text } from '@/ui';
 
@@ -14,9 +15,26 @@ export default function ViewerScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const data = useUserData();
   const doc = (id && data.reports.find((r) => r.id === id)) || data.draft || data.reports[0];
-  const pages = Math.max(1, doc?.pageCount ?? 1);
+  const keys = doc?.fileKeys ?? [];
+  const pages = Math.max(1, keys.length || (doc?.pageCount ?? 1));
   const [page, setPage] = useState(1);
-  const isImage = !!doc?.fileUri && !doc.fileUri.toLowerCase().endsWith('.pdf');
+  // Uploaded originals open through a 5-minute link; the photo just taken on this phone shows directly.
+  const [remote, setRemote] = useState<{ key: string; url: string }>();
+  const key = keys[page - 1];
+  const local = page === 1 ? doc?.fileUri : undefined;
+  useEffect(() => {
+    if (!key || local) return;
+    let live = true;
+    fileUrl(key)
+      .then((url) => live && setRemote({ key, url }))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [key, local]);
+  const uri = local ?? (remote?.key === key ? remote.url : undefined);
+  const isPdf = (key ?? doc?.fileUri ?? '').toLowerCase().endsWith('.pdf');
+  const isImage = !!uri && !isPdf;
 
   return (
     <View style={[styles.root, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 16 }]}>
@@ -25,11 +43,11 @@ export default function ViewerScreen() {
         <Text variant="title" color="white">
           {doc ? `${fmtDate(doc.collectionDate)} report` : 'Report'}
         </Text>
-        <Button label="Share" size="xs" variant="primaryDeep" onPress={() => doc?.fileUri && Share.share({ url: doc.fileUri })} disabled={!doc?.fileUri} />
+        <Button size="xs" variant="primaryDeep" onPress={() => uri && (isPdf ? Linking.openURL(uri) : Share.share({ url: uri }))} disabled={!uri} label={isPdf ? 'Open' : 'Share'} />
       </View>
       <ScrollView style={styles.zoom} contentContainerStyle={styles.zoomContent} maximumZoomScale={4} minimumZoomScale={1} centerContent>
-        {isImage && page === 1 ? (
-          <Image source={{ uri: doc!.fileUri }} style={styles.image} contentFit="contain" accessibilityLabel="Original report, page 1" />
+        {isImage ? (
+          <Image source={{ uri }} style={styles.image} contentFit="contain" accessibilityLabel={`Original report, page ${page}`} />
         ) : (
           <DocumentPreview dark label={`original file · page ${page}`} height={520} badge="" />
         )}

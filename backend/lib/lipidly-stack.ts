@@ -9,8 +9,8 @@ export interface LipidlyStackProps extends cdk.StackProps {
 }
 
 /**
- * Lipidly backend, rollout step 1 (Foundation): storage, sign-in and the API.
- * Lambdas and Bedrock arrive in later steps (see the backend plan).
+ * Lipidly backend: storage (DynamoDB + S3), sign-in (Cognito, email and Google) and the API
+ * (AppSync + Lambda, with Claude on Bedrock for reading documents).
  */
 export class LipidlyStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: LipidlyStackProps) {
@@ -19,8 +19,13 @@ export class LipidlyStack extends cdk.Stack {
     const domainPrefix = this.node.getContext('lipidly:cognitoDomainPrefix') as string;
 
     const data = new Data(this, 'Data', { stage });
-    const auth = new Auth(this, 'Auth', { stage, domainPrefix });
-    const api = new Api(this, 'Api', { stage, userPool: auth.userPool });
+    const auth = new Auth(this, 'Auth', {
+      stage,
+      domainPrefix,
+      googleClientId: this.node.getContext('lipidly:googleClientId') as string,
+      googleClientSecretName: this.node.getContext('lipidly:googleClientSecretName') as string,
+    });
+    const api = new Api(this, 'Api', { stage, userPool: auth.userPool, table: data.table, bucket: data.bucket });
 
     cdk.Tags.of(this).add('app', 'lipidly');
     cdk.Tags.of(this).add('stage', stage);

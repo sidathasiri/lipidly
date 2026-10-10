@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ExtractedPrescription } from '@/services/extraction';
+import type { ExtractedPrescription } from '@/state/types';
 
 /**
  * Extraction result held in memory between "reading" and "confirm". Never persisted:

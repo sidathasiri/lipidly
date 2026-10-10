@@ -26,7 +26,7 @@ export function AddSourceSheet({ kind }: { kind: DocKind }) {
   const copy = COPY[kind];
 
   const toReading = (uri: string | undefined, source: 'photo' | 'pdf') =>
-    router.replace({ pathname: '/reading', params: { kind, source, uri: uri ?? '' } });
+    router.replace({ pathname: '/reading', params: { kind, source, uris: JSON.stringify(uri ? [uri] : []) } });
 
   const pickPhoto = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
