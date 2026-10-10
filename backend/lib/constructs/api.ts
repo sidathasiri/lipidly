@@ -20,8 +20,11 @@ export interface ApiProps {
 const backendRoot = path.join(__dirname, '..', '..');
 const repoRoot = path.join(backendRoot, '..');
 
-/** Claude Opus 5.5 through the US cross-region inference profile. */
-const MODEL_ID = 'us.anthropic.claude-opus-5-5';
+/**
+ * Document reading model, on Bedrock's OpenAI-compatible endpoint (bedrock-mantle). Claude is the
+ * goal once AWS enables Anthropic models for this account; Qwen3-VL reads lab reports well meanwhile.
+ */
+const MODEL_ID = 'qwen.qwen3-vl-235b-a22b-instruct';
 
 /**
  * The one API the app calls. Every request must carry a Cognito token; the Lambda takes the
@@ -64,19 +67,29 @@ export class Api extends Construct {
         environment: { TABLE_NAME: table.tableName, BUCKET_NAME: bucket.bucketName, NODE_OPTIONS: '--enable-source-maps', ...props.environment },
       });
 
-    const reader = fn('Reader', 'reader.ts', { timeout: cdk.Duration.minutes(5), environment: { MODEL_ID }, retryAttempts: 0 });
+    const mupdfDir = path.join(repoRoot, 'node_modules', 'mupdf');
+    const reader = fn('Reader', 'reader.ts', {
+      timeout: cdk.Duration.minutes(5),
+      // PDF pages are rendered to images in memory.
+      memorySize: 2048,
+      environment: { MODEL_ID },
+      retryAttempts: 0,
+      bundling: {
+        externalModules: ['mupdf'],
+        minify: true,
+        sourceMap: true,
+        target: 'node22',
+        // mupdf is an ES module with a WebAssembly file, so it ships as a package beside the bundle.
+        commandHooks: {
+          beforeBundling: () => [],
+          beforeInstall: () => [],
+          afterBundling: (_in: string, out: string) => [`mkdir -p "${out}/node_modules"`, `cp -R "${mupdfDir}" "${out}/node_modules/mupdf"`],
+        },
+      },
+    });
     table.grantReadWriteData(reader);
     bucket.grantRead(reader);
-    reader.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
-        resources: [
-          `arn:aws:bedrock:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:inference-profile/${MODEL_ID}`,
-          // The US profile routes to any US region.
-          'arn:aws:bedrock:*::foundation-model/anthropic.claude-opus-5-5*',
-        ],
-      }),
-    );
+    reader.addToRolePolicy(new iam.PolicyStatement({ actions: ['bedrock-mantle:CreateInference'], resources: ['*'] }));
 
     const apiFn = fn('Api', 'api.ts', {
       timeout: cdk.Duration.seconds(29),
