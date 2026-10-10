@@ -48,13 +48,12 @@ Thumbs.db
 *.swp
 xcuserdata/
 
-# Not source code: design hand-off, docs and agent config (kept locally only)
+# Not source code: design hand-off, docs and agent config (kept locally only; READMEs are tracked)
 /screens/
 /design/
 /Lipidly product spec.pdf
 /tokens.json
 /docs/
-README.md
 AGENTS.md
 CLAUDE.md
 .claude/
