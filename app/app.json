@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.lipidly.app",
+      "bundleIdentifier": "com.sidathasiri.lipidly",
       "infoPlist": {
         "NSCameraUsageDescription": "Lipidly uses the camera to photograph your lab reports and prescriptions.",
         "NSPhotoLibraryUsageDescription": "Lipidly lets you choose a photo of a lab report or prescription."
