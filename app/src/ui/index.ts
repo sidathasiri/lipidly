@@ -9,6 +9,7 @@ export { ChoiceChip, ChipGroup, type ChoiceOption } from './components/ChoiceChi
 export { AnswerPair, SegmentedControl, Toggle, TextField, CodeInput } from './components/Inputs';
 export { DateField } from './components/DateField';
 export { Mascot, type MascotMood } from './components/Mascot';
+export { Logo, type LogoVariant, type LogoTone } from './brand/Logo';
 export { Screen, TAB_BAR_SPACE } from './components/Screen';
 export { TopBar, StepPill, IconButton, ColouredHeader, onHeader, type HeaderTone } from './components/Headers';
 export { IconTile, DateTile, StatTile, SourceTile } from './components/Tiles';

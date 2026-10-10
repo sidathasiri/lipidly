@@ -2,7 +2,7 @@ import { HABIT_LIBRARY_VERSION, RULESET } from '@lipidly/rules';
 import Constants from 'expo-constants';
 import { Phone } from 'lucide-react-native';
 import { Linking, View } from 'react-native';
-import { Button, Card, DetailList, ListGroup, ListRow, Screen, Text, TopBar } from '@/ui';
+import { Button, Card, DetailList, ListGroup, ListRow, Logo, Screen, Text, TopBar } from '@/ui';
 import { EMERGENCY, WARNING_SIGNS } from './UrgentCareScreen';
 
 /** Disclaimer, urgent warning signs, contact and version (35). */
@@ -10,6 +10,9 @@ export default function AboutScreen() {
   return (
     <Screen gap={12}>
       <TopBar />
+      <View style={{ alignItems: 'flex-start', paddingVertical: 8 }}>
+        <Logo variant="lockup" height={40} />
+      </View>
       <Text variant="h1" accessibilityRole="header">
         About Lipidly
       </Text>

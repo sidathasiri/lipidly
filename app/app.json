@@ -5,7 +5,7 @@
     "scheme": "lipidly",
     "version": "0.1.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/brand/png/app-icon-ios-1024.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
@@ -13,20 +13,21 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Lipidly uses the camera to photograph your lab reports and prescriptions.",
         "NSPhotoLibraryUsageDescription": "Lipidly lets you choose a photo of a lab report or prescription."
-      }
+      },
+      "icon": "./assets/brand/png/app-icon-ios-1024.png"
     },
     "android": {
       "package": "com.lipidly.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0E7490",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#ECFEFF",
+        "foregroundImage": "./assets/brand/png/android-adaptive-foreground-432.png",
+        "backgroundImage": "./assets/brand/png/android-adaptive-background-432.png",
+        "monochromeImage": "./assets/brand/png/android-adaptive-monochrome-432.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/brand/png/logo-mark-1024.png"
     },
     "plugins": [
       "expo-router",
@@ -35,7 +36,7 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#0E7490",
-          "image": "./assets/splash-icon.png",
+          "image": "./assets/brand/png/logo-mark-white-1024.png",
           "imageWidth": 120
         }
       ],
@@ -51,7 +52,13 @@
           "photosPermission": "Lipidly lets you choose a photo of a lab report or prescription."
         }
       ],
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand/png/android-notification-96.png",
+          "color": "#0E7490"
+        }
+      ],
       "@react-native-community/datetimepicker"
     ],
     "experiments": {

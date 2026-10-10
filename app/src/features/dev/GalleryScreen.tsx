@@ -16,6 +16,7 @@ import {
   FieldBox,
   IconTile,
   ListGroup,
+  Logo,
   ListRow,
   Mascot,
   MonthCalendar,
@@ -52,6 +53,20 @@ export default function GalleryScreen() {
   return (
     <Screen gap={18}>
       <TopBar title="Components" />
+      <Section title="Logo">
+        <View style={{ gap: 12 }}>
+          <Logo variant="lockup" height={40} />
+          <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+            <Logo variant="mark" height={40} />
+            <Logo variant="mark" tone="mono" height={40} />
+            <Logo variant="wordmark" height={32} />
+          </View>
+          <View style={{ backgroundColor: '#0E7490', padding: 16, borderRadius: 24, flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+            <Logo variant="lockup" tone="white" height={32} />
+            <Logo variant="mark" tone="white" height={32} />
+          </View>
+        </View>
+      </Section>
       <Section title="Type">
         <Text variant="displayL">Display L</Text>
         <Text variant="h1">Heading 1</Text>

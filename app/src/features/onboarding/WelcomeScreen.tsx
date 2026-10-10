@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { FlatList, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { markWelcomeSeen } from '@/state/actions/onboarding';
-import { Button, colors, Mascot, PageDots, Screen, Tap, Text } from '@/ui';
+import { Button, colors, Logo, Mascot, PageDots, Screen, Tap, Text } from '@/ui';
 
 const SLIDES = [
   {
@@ -58,6 +58,7 @@ export default function WelcomeScreen() {
   return (
     <Screen background="primary" scroll={false} padding="none" contentStyle={{ paddingTop: insets.top + 6 }}>
       <View style={styles.skipRow}>
+        <Logo variant="lockup" tone="white" height={28} />
         <Tap onPress={finish} accessibilityLabel="Skip" hitSlop={10}>
           <Text variant="bodyMedium" color="white">
             Skip
@@ -103,7 +104,7 @@ export default function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  skipRow: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 24 },
+  skipRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24 },
   slide: { paddingHorizontal: 24, gap: 22 },
   blob: { position: 'absolute', borderRadius: 999 },
   paper: {

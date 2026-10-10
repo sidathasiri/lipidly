@@ -48,6 +48,17 @@ export const colors = {
   cyanBar: '#0891B2',
 } as const;
 
+/** Logo colours (brand: two-tone heart). Never recolour the heart red, green or amber. */
+export const brandColors = {
+  left: '#0E7490',
+  right: '#22D3EE',
+  overlap: '#026086',
+  wordmark: '#0F172A',
+  iconBackground: '#ECFEFF',
+  whiteLeft: '#FFFFFF',
+  whiteRight: '#A5F3FC',
+} as const;
+
 /** Result status colours. Only StatusChip, RangeGauge and TrendChart may use these. */
 export const statusColors = {
   inRange: { fg: '#15803D', bg: '#DCFCE7' },

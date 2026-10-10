@@ -51,6 +51,8 @@ src/
   content/    marker explanations and articles (sample copy awaiting clinical review)
 ```
 
+Brand assets (logo, app icon, splash, notification icon) live in `assets/brand`; see its README for usage rules. In code, use the `<Logo>` component from `@/ui`. `app.json` points at the icon and splash PNGs there. Changing them needs a native rebuild: `npx expo prebuild --clean`, then `npx expo run:ios`.
+
 Business rules (status, focus, escalation, habits, plan updates) live in `packages/rules` and are shared with the future backend.
 
 ## Checks
