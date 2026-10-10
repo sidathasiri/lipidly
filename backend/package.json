@@ -1,0 +1,21 @@
+{
+  "name": "@lipidly/backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lipidly AWS backend (CDK). Placeholder: the stack defines no resources yet.",
+  "scripts": {
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "aws-cdk": "^2.1145.0",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.273.0",
+    "constructs": "^10.8.1"
+  }
+}

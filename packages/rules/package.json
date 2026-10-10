@@ -1,0 +1,14 @@
+{
+  "name": "@lipidly/rules",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lipidly rule engine: status, focus, escalation, consistency checks, habit matching and plan updates. Pure functions, no I/O.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
+}

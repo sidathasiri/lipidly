@@ -1,0 +1,15 @@
+{
+  "name": "lipidly",
+  "private": true,
+  "workspaces": [
+    "app",
+    "backend",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "overrides": {
+    "react": "19.2.3"
+  }
+}
