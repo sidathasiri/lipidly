@@ -116,7 +116,21 @@ export const AVOID_OPTIONS: ChoiceOption<string>[] = [
   { value: 'mushrooms', label: 'Mushrooms' },
 ];
 
-export const DEFAULT_FOOD: FoodPreferences = { cuisines: ['sriLankan', 'western'], dietType: 'everything', avoid: [] };
+export const PEOPLE_OPTIONS: ChoiceOption<string>[] = [
+  { value: '1', label: 'Just me' },
+  { value: '2', label: '2' },
+  { value: '4', label: '3–4' },
+  { value: '6', label: '5 or more' },
+];
+
+export const DEFAULT_FOOD: FoodPreferences = { cuisines: ['sriLankan', 'western'], dietType: 'everything', avoid: [], people: 1 };
+
+/** "Sri Lankan, Western · just me", for the Profile row. */
+export const foodSummary = (food: FoodPreferences) => {
+  const cuisines = food.cuisines.map((c) => CUISINE_OPTIONS.find((o) => o.value === c)?.label ?? c).join(', ');
+  const people = food.people && food.people > 1 ? `${PEOPLE_OPTIONS.find((o) => o.value === String(food.people))?.label ?? food.people} people` : 'just me';
+  return `${cuisines} · ${people}`;
+};
 
 const optionValues = (options: ChoiceOption<string>[]) => new Set(options.map((o) => o.value));
 const CUISINE_VALUES = optionValues(CUISINE_OPTIONS);

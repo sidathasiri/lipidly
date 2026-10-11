@@ -7,7 +7,7 @@ import { toggleShopping } from '@/state/actions/meals';
 import { useUserData } from '@/state/hooks';
 import { Button, colors, Icon, ListGroup, Screen, ScreenState, Section, Tap, Text, TopBar } from '@/ui';
 
-/** Everything the week's meals need, added up and grouped by shop section, ticked off while shopping (F13). */
+/** Everything the whole week's meals need, added up and grouped by shop section, ticked off while shopping (F13.7). */
 export default function ShoppingListScreen() {
   const data = useUserData();
   const plan = latestMealPlan(data);
@@ -41,7 +41,7 @@ export default function ShoppingListScreen() {
           Shopping list
         </Text>
         <Text variant="body" color="muted">
-          For your meals from {fmtDayMonth(plan.weekStart)} · {done} of {total} ticked
+          For your meals {fmtDayMonth(plan.weekStart)} – {fmtDayMonth(plan.days[plan.days.length - 1]?.date ?? plan.weekStart)} · {done} of {total} ticked
         </Text>
       </View>
       {sections.map((s) => (

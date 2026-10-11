@@ -89,7 +89,7 @@ export default function MealsScreen() {
           actionLabel={isSyncedSession() ? 'Create my week' : undefined}
           onAction={isSyncedSession() ? startNewWeek : undefined}
         />
-        <Button label="Change food preferences" variant="link" size="sm" onPress={() => router.push({ pathname: '/onboarding/lifestyle', params: { edit: '1' } })} />
+        <Button label="Change food preferences" variant="link" size="sm" onPress={() => router.push('/profile/food')} />
       </Screen>
     );
   }
@@ -135,7 +135,7 @@ export default function MealsScreen() {
       </Text>
       <View style={styles.links}>
         <Button label="New week" variant="link" size="sm" onPress={newWeek} />
-        <Button label="Food preferences" variant="link" size="sm" onPress={() => router.push({ pathname: '/onboarding/lifestyle', params: { edit: '1' } })} />
+        <Button label="Food preferences" variant="link" size="sm" onPress={() => router.push('/profile/food')} />
       </View>
     </Screen>
   );

@@ -44,6 +44,8 @@ export interface FoodPreferences {
   avoid: string[];
   /** Optional free text for the meal writer, e.g. "I like spicy food, no mushrooms". */
   notes?: string;
+  /** How many people the meals are cooked for; recipes and the shopping list scale to it. Missing = 1. */
+  people?: number;
 }
 
 // ── Meal plans (spec F13) ─────────────────────────────────────────────────────

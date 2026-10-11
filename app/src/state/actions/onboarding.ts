@@ -38,10 +38,18 @@ export function saveProfile(profile: UserProfile) {
   enqueue({ id: newId('op_'), op: 'saveProfile', variables: { profile, today: t } });
 }
 
-/** "What fits your life": lifestyle answers and food preferences for meal plans (F13). */
-export function saveLifestyle(lifestyle: LifestyleAnswers, food: FoodPreferences) {
+const tidyFood = (food: FoodPreferences): FoodPreferences => ({ ...food, notes: food.notes?.trim() || undefined });
+
+/** "What fits your life": lifestyle answers, plus food preferences during onboarding (F13). */
+export function saveLifestyle(lifestyle: LifestyleAnswers, food?: FoodPreferences) {
   const profile = currentUserData().profile;
-  if (profile) saveProfile({ ...profile, lifestyle, food });
+  if (profile) saveProfile({ ...profile, lifestyle, food: food ? tidyFood(food) : profile.food });
+}
+
+/** Profile → Food preferences (F13). Used by the next meal plan. */
+export function saveFoodPreferences(food: FoodPreferences) {
+  const profile = currentUserData().profile;
+  if (profile) saveProfile({ ...profile, food: tidyFood(food) });
 }
 
 export function finishOnboarding() {

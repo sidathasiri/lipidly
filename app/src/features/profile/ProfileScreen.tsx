@@ -1,6 +1,6 @@
 import { ageOn } from '@lipidly/rules';
 import { router } from 'expo-router';
-import { Bell, Database, Info, LogOut, Pencil, Shield, Sparkles } from 'lucide-react-native';
+import { Bell, ChefHat, Database, Info, LogOut, Pencil, Shield, Sparkles } from 'lucide-react-native';
 import { Alert, StyleSheet, View } from 'react-native';
 import { signOut } from '@/state/actions/auth';
 import { useAccount, useUserData } from '@/state/hooks';
@@ -8,7 +8,7 @@ import { today } from '@/state/ids';
 import { loadSampleData } from '@/state/sample-data';
 import { isSyncedSession } from '@/state/store';
 import { colors, ColouredHeader, DetailList, ListGroup, ListRow, Screen, Text } from '@/ui';
-import { ALCOHOL_OPTIONS, CONDITION_OPTIONS, labelOf, MEDICINE_OPTIONS, SEX_OPTIONS, SMOKING_OPTIONS, TIME_OPTIONS } from '../onboarding/options';
+import { ALCOHOL_OPTIONS, CONDITION_OPTIONS, DEFAULT_FOOD, foodSummary, labelOf, MEDICINE_OPTIONS, SEX_OPTIONS, SMOKING_OPTIONS, TIME_OPTIONS } from '../onboarding/options';
 
 const initials = (name: string) =>
   name
@@ -67,6 +67,13 @@ export default function ProfileScreen() {
           title="What fits your life"
           value={profile ? labelOf(TIME_OPTIONS, profile.lifestyle.timeFree) : undefined}
           onPress={() => router.push({ pathname: '/onboarding/lifestyle', params: { edit: '1' } })}
+        />
+        <ListRow
+          icon={ChefHat}
+          iconTone="sky"
+          title="Food preferences"
+          subtitle={foodSummary(profile?.food ?? DEFAULT_FOOD)}
+          onPress={() => router.push('/profile/food')}
         />
         <ListRow icon={Bell} iconTone="sky" title="Reminders" onPress={() => router.push('/profile/reminders')} />
         <ListRow icon={Shield} iconTone="tint" title="Privacy and data" onPress={() => router.push('/profile/privacy')} />

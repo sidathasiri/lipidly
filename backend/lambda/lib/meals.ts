@@ -22,6 +22,9 @@ const AVOID_LABELS: Record<string, string> = { beef: 'beef', pork: 'pork', seafo
 
 export const DEFAULT_FOOD: FoodPreferences = { cuisines: ['sriLankan', 'western'], dietType: 'everything', avoid: [] };
 
+/** People the meals are cooked for (1–8). */
+const peopleOf = (profile: UserProfile) => Math.min(8, Math.max(1, Math.round(profile.food?.people ?? 1)));
+
 function userBrief(profile: UserProfile, guidance: MealGuidance) {
   const food = profile.food ?? DEFAULT_FOOD;
   const avoid = food.avoid.map((a) => AVOID_LABELS[a] ?? a);
@@ -84,9 +87,9 @@ const MEAL = {
 
 const DAY_SCHEMA = { type: 'object', additionalProperties: false, required: ['meals'], properties: { meals: { type: 'array', items: MEAL } } };
 
-const RECIPE_RULES = `Recipe format:
+const recipeRules = (people: number) => `Recipe format:
 - title: the dish name. summary: one short sentence on what it is and why it suits a heart-healthy plan (no medical claims).
-- minutes: total hands-on minutes. servings: 1 for snacks, 2 for meals.
+- minutes: total hands-on minutes. servings: ${people} for every meal and snack (cooking for ${people === 1 ? 'one person' : `${people} people`}); ingredient quantities are for all ${people} servings.
 - ingredients: shopping names, lower case and singular ("red onion", "red rice", "sardine"), quantity for the servings, a unit from the list, and a shop category. Spices and salt use category "spices".
 - steps: short numbered-style instructions without the numbers, 2 to 7 steps.`;
 
@@ -110,7 +113,7 @@ async function outlineOnce(profile: UserProfile, guidance: MealGuidance, avoidTi
       { role: 'system', content: 'You plan healthy, realistic home meals for a cholesterol app. You write only food, never medical advice.' },
       {
         role: 'user',
-        content: `Plan 7 days of meals for one person: ${MEAL_SLOTS.map((s) => SLOT_LABELS[s].toLowerCase()).join(', ')}.\n${userBrief(profile, guidance)}\n\nGive only dish names. Every dish in the week is different; vary proteins and grains across days.${
+        content: `Plan 7 days of meals${peopleOf(profile) > 1 ? ` for a household of ${peopleOf(profile)}` : ' for one person'}: ${MEAL_SLOTS.map((s) => SLOT_LABELS[s].toLowerCase()).join(', ')}.\n${userBrief(profile, guidance)}\n\nGive only dish names. Every dish in the week is different; vary proteins and grains across days.${
           avoidTitles.length ? `\nDon't repeat these dishes from last week: ${avoidTitles.slice(0, 40).join('; ')}.` : ''
         }`,
       },
@@ -177,7 +180,7 @@ async function writeMeals(profile: UserProfile, guidance: MealGuidance, wanted: 
         { role: 'system', content: 'You write healthy, realistic home recipes for a cholesterol app. You write only food, never medical advice.' },
         {
           role: 'user',
-          content: `${userBrief(profile, guidance)}\n\n${RECIPE_RULES}\n\nWrite these recipes, one per slot:\n${slots.map((s) => `- ${s}: ${wanted[s]}`).join('\n')}${note}${extra}`,
+          content: `${userBrief(profile, guidance)}\n\n${recipeRules(peopleOf(profile))}\n\nWrite these recipes, one per slot:\n${slots.map((s) => `- ${s}: ${wanted[s]}`).join('\n')}${note}${extra}`,
         },
       ],
     });
