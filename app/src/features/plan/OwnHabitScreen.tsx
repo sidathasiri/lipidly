@@ -25,16 +25,14 @@ export default function OwnHabitScreen() {
 
   if (!isNew && !existing) {
     return (
-      <Screen>
-        <TopBar left="close" />
+      <Screen topBar={<TopBar left="close" />}>
         <ScreenState kind="error" title="Habit not found" message="It may have been removed." />
       </Screen>
     );
   }
   if (isNew && own.length >= MAX_OWN_HABITS) {
     return (
-      <Screen>
-        <TopBar left="close" />
+      <Screen topBar={<TopBar left="close" />}>
         <ScreenState
           kind="empty"
           title={`You have ${MAX_OWN_HABITS} own habits`}
@@ -69,7 +67,7 @@ export default function OwnHabitScreen() {
     ]);
 
   return (
-    <Screen
+    <Screen topBar={<TopBar left="close" />}
       keyboard
       gap={14}
       footer={
@@ -79,7 +77,6 @@ export default function OwnHabitScreen() {
         </>
       }
     >
-      <TopBar left="close" />
       <View style={{ gap: 4 }}>
         <Text variant="h1" accessibilityRole="header">
           {isNew ? 'Add your own habit' : 'Edit your habit'}

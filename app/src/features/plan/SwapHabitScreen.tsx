@@ -19,8 +19,7 @@ export default function SwapHabitScreen() {
 
   if (!owner || !current || !owner.focusGroup || !profile) {
     return (
-      <Screen>
-        <TopBar left="close" />
+      <Screen topBar={<TopBar left="close" />}>
         <ScreenState kind="empty" title="Nothing to swap" message="This habit can't be swapped." />
       </Screen>
     );
@@ -39,8 +38,7 @@ export default function SwapHabitScreen() {
   };
 
   return (
-    <Screen gap={12} footer={<Button label="Swap habit" onPress={confirm} disabled={!picked || !gate.allowed} />}>
-      <TopBar left="close" />
+    <Screen topBar={<TopBar left="close" />} gap={12} footer={<Button label="Swap habit" onPress={confirm} disabled={!picked || !gate.allowed} />}>
       <Text variant="h1" style={{ fontSize: 28, lineHeight: 30 }} accessibilityRole="header">
         Swap "{current.title}"
       </Text>

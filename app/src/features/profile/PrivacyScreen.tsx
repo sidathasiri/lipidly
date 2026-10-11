@@ -47,8 +47,7 @@ export default function PrivacyScreen() {
     ]);
 
   return (
-    <Screen gap={12}>
-      <TopBar />
+    <Screen topBar={<TopBar />} gap={12}>
       <Text variant="h1" accessibilityRole="header">
         Privacy and data
       </Text>

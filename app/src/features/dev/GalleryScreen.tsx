@@ -51,8 +51,7 @@ export default function GalleryScreen() {
   const t = today();
 
   return (
-    <Screen gap={18}>
-      <TopBar title="Components" />
+    <Screen topBar={<TopBar title="Components" />} gap={18}>
       <Section title="Logo">
         <View style={{ gap: 12 }}>
           <Logo variant="lockup" height={40} />

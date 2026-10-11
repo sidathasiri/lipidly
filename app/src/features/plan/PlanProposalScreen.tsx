@@ -13,8 +13,7 @@ export default function PlanProposalScreen() {
 
   if (!proposal) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="empty" title="No plan to review" message="A new plan appears here after you confirm a report." />
       </Screen>
     );
@@ -32,7 +31,7 @@ export default function PlanProposalScreen() {
   };
 
   return (
-    <Screen
+    <Screen topBar={<TopBar />}
       gap={12}
       footer={
         <>
@@ -45,7 +44,6 @@ export default function PlanProposalScreen() {
         </>
       }
     >
-      <TopBar />
       <Text variant="h1" accessibilityRole="header">
         {isFirst ? 'Your plan' : 'Your updated plan'}
       </Text>

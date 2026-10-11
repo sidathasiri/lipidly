@@ -16,15 +16,14 @@ export default function RetestScreen() {
 
   if (!target || !date) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="empty" title="No plan yet" />
       </Screen>
     );
   }
 
   return (
-    <Screen
+    <Screen topBar={<TopBar />}
       gap={14}
       footer={
         <Button
@@ -36,7 +35,6 @@ export default function RetestScreen() {
         />
       }
     >
-      <TopBar />
       <Text variant="h1" accessibilityRole="header">
         Retest date
       </Text>

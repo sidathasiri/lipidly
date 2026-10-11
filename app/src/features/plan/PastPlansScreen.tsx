@@ -11,8 +11,7 @@ export default function PastPlansScreen() {
     .sort((a, b) => b.startDate.localeCompare(a.startDate));
 
   return (
-    <Screen gap={12}>
-      <TopBar />
+    <Screen topBar={<TopBar />} gap={12}>
       <Text variant="h1" accessibilityRole="header">
         Past plans
       </Text>

@@ -16,8 +16,7 @@ export default function ShoppingListScreen() {
 
   if (!plan) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="empty" title="No shopping list yet" message="Create a week of meal ideas first." />
       </Screen>
     );
@@ -34,8 +33,7 @@ export default function ShoppingListScreen() {
     });
 
   return (
-    <Screen gap={14} footer={<Button label="Share list" variant="secondary" onPress={share} disabled={done === total} />}>
-      <TopBar />
+    <Screen topBar={<TopBar />} gap={14} footer={<Button label="Share list" variant="secondary" onPress={share} disabled={done === total} />}>
       <View style={{ gap: 4 }}>
         <Text variant="h1" accessibilityRole="header">
           Shopping list

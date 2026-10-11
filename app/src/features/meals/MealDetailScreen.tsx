@@ -18,8 +18,7 @@ export default function MealDetailScreen() {
 
   if (!plan || !meal) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="error" title="Meal not found" message="Your meal plan may have changed." />
       </Screen>
     );
@@ -37,8 +36,7 @@ export default function MealDetailScreen() {
   };
 
   return (
-    <Screen gap={14} footer={<Button label={swapping ? 'Finding another meal…' : 'Swap this meal'} icon={RefreshCw} variant="secondary" onPress={swap} loading={swapping} />}>
-      <TopBar title={`${SLOT_LABELS[meal.slot]} · ${fmtWeekdayDate(date)}`} />
+    <Screen topBar={<TopBar title={`${SLOT_LABELS[meal.slot]} · ${fmtWeekdayDate(date)}`} />} gap={14} footer={<Button label={swapping ? 'Finding another meal…' : 'Swap this meal'} icon={RefreshCw} variant="secondary" onPress={swap} loading={swapping} />}>
       <View style={styles.head}>
         <IconTile icon={SLOT_ICONS[meal.slot].icon} tone={SLOT_ICONS[meal.slot].tone} size={48} />
         <View style={{ flex: 1, gap: 4 }}>

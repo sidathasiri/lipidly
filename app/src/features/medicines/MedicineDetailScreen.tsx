@@ -16,8 +16,7 @@ export default function MedicineDetailScreen() {
 
   if (!m) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="error" title="Medicine not found" />
       </Screen>
     );
@@ -44,7 +43,7 @@ export default function MedicineDetailScreen() {
   ];
 
   return (
-    <Screen
+    <Screen topBar={<TopBar />}
       gap={12}
       footer={
         <Button
@@ -65,7 +64,6 @@ export default function MedicineDetailScreen() {
         />
       }
     >
-      <TopBar />
       <View>
         <Text variant="h1" accessibilityRole="header">
           {m.name} {m.strength}

@@ -21,8 +21,7 @@ export default function AppointmentsScreen() {
     ]);
 
   return (
-    <Screen gap={12}>
-      <TopBar right={<Button label="Add" icon={Plus} size="xs" onPress={() => router.push('/medicines/appointment-new')} />} />
+    <Screen topBar={<TopBar right={<Button label="Add" icon={Plus} size="xs" onPress={() => router.push('/medicines/appointment-new')} />} />} gap={12}>
       <Text variant="h1" accessibilityRole="header">
         Appointments
       </Text>

@@ -14,8 +14,7 @@ export const EMERGENCY = { label: 'Call 1990 (Suwa Seriya)', tel: 'tel:1990' };
 /** Static list of warning signs that need urgent care, with the local emergency number (F11.4). */
 export default function UrgentCareScreen() {
   return (
-    <Screen gap={14} footer={<Button label={EMERGENCY.label} icon={Phone} variant="dark" onPress={() => Linking.openURL(EMERGENCY.tel)} />}>
-      <TopBar left="close" />
+    <Screen topBar={<TopBar left="close" />} gap={14} footer={<Button label={EMERGENCY.label} icon={Phone} variant="dark" onPress={() => Linking.openURL(EMERGENCY.tel)} />}>
       <Text variant="h1" accessibilityRole="header">
         Get urgent care now if you have
       </Text>

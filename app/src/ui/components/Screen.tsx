@@ -11,6 +11,10 @@ interface ScreenProps {
   children: ReactNode;
   /** Full-bleed block above the content (ColouredHeader). It handles the top safe area itself. */
   header?: ReactNode;
+  /** TopBar (back/close and title). Stays fixed above the scrolling content so back is always in reach. */
+  topBar?: ReactNode;
+  /** A back/close button floating over a full-bleed header; stays in place while the content scrolls. */
+  overlay?: ReactNode;
   /** Sticky bottom area for primary actions (stays within thumb reach). */
   footer?: ReactNode;
   scroll?: boolean;
@@ -30,6 +34,8 @@ const BG = { background: colors.background, primary: colors.primary, ink: colors
 export function Screen({
   children,
   header,
+  topBar,
+  overlay,
   footer,
   scroll = true,
   padding = 'default',
@@ -44,7 +50,7 @@ export function Screen({
   const dark = background === 'primary' || background === 'ink';
 
   const body = (
-    <View style={[{ paddingHorizontal: px, gap, paddingTop: header ? 14 : insets.top + 10 }, scroll ? null : styles.flex, contentStyle]}>
+    <View style={[{ paddingHorizontal: px, gap, paddingTop: topBar ? 8 : header ? 14 : insets.top + 10 }, scroll ? null : styles.flex, contentStyle]}>
       {children}
     </View>
   );
@@ -70,7 +76,13 @@ export function Screen({
 
   const inner = (
     <>
+      {topBar && <View style={[styles.topBar, { paddingTop: insets.top + 10, paddingHorizontal: px || spacing.screenX, backgroundColor: BG[background] }]}>{topBar}</View>}
       {content}
+      {overlay && (
+        <View pointerEvents="box-none" style={[styles.overlay, { top: insets.top + 12, left: px || spacing.screenX }]}>
+          {overlay}
+        </View>
+      )}
       {footer && <View style={[styles.footer, { paddingHorizontal: px || spacing.screenX, paddingBottom: insets.bottom + 12 }]}>{footer}</View>}
     </>
   );
@@ -92,4 +104,6 @@ export function Screen({
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   footer: { paddingTop: 10, gap: 8 },
+  topBar: { paddingBottom: 6, zIndex: 1 },
+  overlay: { position: 'absolute', zIndex: 2 },
 });

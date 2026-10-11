@@ -19,8 +19,7 @@ export default function FoodPreferencesScreen() {
   };
 
   return (
-    <Screen gap={14} footer={<Button label="Save" onPress={save} disabled={!profile || food.cuisines.length === 0} />}>
-      <TopBar />
+    <Screen topBar={<TopBar />} gap={14} footer={<Button label="Save" onPress={save} disabled={!profile || food.cuisines.length === 0} />}>
       <View style={{ gap: 4 }}>
         <Text variant="h1" accessibilityRole="header">
           Food preferences

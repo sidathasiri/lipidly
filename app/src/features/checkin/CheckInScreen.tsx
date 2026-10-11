@@ -20,8 +20,7 @@ export default function CheckInScreen() {
 
   if (!plan || habits.length === 0) {
     return (
-      <Screen>
-        <TopBar left="close" />
+      <Screen topBar={<TopBar left="close" />}>
         <ScreenState kind="empty" title="No habits to check in yet" message="Once you start a plan, your daily questions appear here." actionLabel="Go to Plan" onAction={() => router.replace('/plan')} />
       </Screen>
     );
@@ -42,8 +41,7 @@ export default function CheckInScreen() {
   };
 
   return (
-    <Screen gap={10} footer={<Button label="Done" onPress={done} disabled={answered < habits.length} />}>
-      <TopBar left="close" center={<ProgressBar segments={habits.length} filled={answered} accessibilityLabel={`${answered} of ${habits.length} answered`} />} right={<Text variant="smallStrong" color="muted">{answered}/{habits.length}</Text>} />
+    <Screen topBar={<TopBar left="close" center={<ProgressBar segments={habits.length} filled={answered} accessibilityLabel={`${answered} of ${habits.length} answered`} />} right={<Text variant="smallStrong" color="muted">{answered}/{habits.length}</Text>} />} gap={10} footer={<Button label="Done" onPress={done} disabled={answered < habits.length} />}>
       <Text variant="h1" style={{ fontSize: 28, marginVertical: 2 }} accessibilityRole="header">
         {date === t ? 'How did today go?' : `How did ${labelFor(date).toLowerCase() === 'yesterday' ? 'yesterday' : labelFor(date)} go?`}
       </Text>

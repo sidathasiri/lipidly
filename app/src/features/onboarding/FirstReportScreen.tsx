@@ -8,8 +8,7 @@ import { Card, colors, ProgressBar, Screen, SourceTile, Text, TopBar } from '@/u
 /** Start the first upload: add a report, enter by hand, or "I don't have one yet" (06). */
 export default function FirstReportScreen() {
   return (
-    <Screen padding="onboarding" gap={18}>
-      <TopBar left="back" center={<ProgressBar segments={6} filled={6} accessibilityLabel="Step 6 of 6" />} />
+    <Screen topBar={<TopBar left="back" center={<ProgressBar segments={6} filled={6} accessibilityLabel="Step 6 of 6" />} />} padding="onboarding" gap={18}>
       <Text variant="displayL" style={{ fontSize: 32, lineHeight: 34 }} accessibilityRole="header">
         Add your latest lipid report
       </Text>

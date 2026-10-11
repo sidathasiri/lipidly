@@ -17,8 +17,7 @@ export default function ResultsScreen() {
 
   if (!report || !profile) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="error" title="Report not found" />
       </Screen>
     );
@@ -31,7 +30,7 @@ export default function ResultsScreen() {
   const hasProposal = proposal?.sourceReportId === report.id;
 
   return (
-    <Screen
+    <Screen topBar={<TopBar />}
       gap={10}
       footer={
         hasProposal ? (
@@ -41,7 +40,6 @@ export default function ResultsScreen() {
         ) : undefined
       }
     >
-      <TopBar />
       <View>
         <Text variant="small" color="muted" style={{ fontSize: 14 }}>
           {fmtDate(report.collectionDate)} {'·'} {report.labName}

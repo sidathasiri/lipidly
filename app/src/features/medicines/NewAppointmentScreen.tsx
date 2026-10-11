@@ -19,8 +19,7 @@ export default function NewAppointmentScreen() {
   };
 
   return (
-    <Screen keyboard gap={14} footer={<Button label="Save appointment" onPress={save} disabled={!doctor.trim()} />}>
-      <TopBar left="close" />
+    <Screen topBar={<TopBar left="close" />} keyboard gap={14} footer={<Button label="Save appointment" onPress={save} disabled={!doctor.trim()} />}>
       <Text variant="h1" accessibilityRole="header">
         Add an appointment
       </Text>

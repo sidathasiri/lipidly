@@ -24,8 +24,7 @@ export default function MarkerDetailScreen() {
   const available = MARKER_ORDER.filter((m) => reports.some((r) => r.values[m] !== undefined));
 
   return (
-    <Screen gap={12}>
-      <TopBar />
+    <Screen topBar={<TopBar />} gap={12}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
         {available.map((m) => (
           <ChoiceChip key={m} dense label={MARKER_LABELS[m]} selected={m === marker} onPress={() => router.setParams({ marker: m })} />

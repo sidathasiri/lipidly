@@ -31,8 +31,7 @@ export default function LifestyleScreen() {
   };
 
   return (
-    <Screen padding="onboarding" gap={14} footer={<Button label={editing ? 'Save' : 'Continue'} onPress={save} disabled={(l.places.length === 0 && !l.other?.places?.length) || (!editing && food.cuisines.length === 0)} />}>
-      <TopBar left="back" center={editing ? undefined : <ProgressBar segments={6} filled={5} accessibilityLabel="Step 5 of 6" />} />
+    <Screen topBar={<TopBar left="back" center={editing ? undefined : <ProgressBar segments={6} filled={5} accessibilityLabel="Step 5 of 6" />} />} padding="onboarding" gap={14} footer={<Button label={editing ? 'Save' : 'Continue'} onPress={save} disabled={(l.places.length === 0 && !l.other?.places?.length) || (!editing && food.cuisines.length === 0)} />}>
       <View style={{ gap: 4 }}>
         <Text variant="h1" accessibilityRole="header">
           What fits your life

@@ -15,8 +15,7 @@ export default function ReminderSettingsScreen() {
     .map((h) => `${h.title} ${fmtTime(h.reminderTime!)}`);
 
   return (
-    <Screen gap={12}>
-      <TopBar />
+    <Screen topBar={<TopBar />} gap={12}>
       <Text variant="h1" accessibilityRole="header">
         Reminders
       </Text>

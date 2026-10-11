@@ -24,8 +24,7 @@ export default function AddMedicineScreen() {
   };
 
   return (
-    <Screen keyboard gap={14} footer={<Button label="Save medicine" onPress={save} disabled={!name.trim() || !dose.trim()} />}>
-      <TopBar left="close" />
+    <Screen topBar={<TopBar left="close" />} keyboard gap={14} footer={<Button label="Save medicine" onPress={save} disabled={!name.trim() || !dose.trim()} />}>
       <Text variant="h1" accessibilityRole="header">
         Add a medicine
       </Text>

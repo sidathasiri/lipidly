@@ -20,8 +20,7 @@ export default function SeeDoctorScreen() {
 
   if (!esc) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="empty" title="Nothing to show" />
       </Screen>
     );
@@ -42,9 +41,11 @@ export default function SeeDoctorScreen() {
     <Screen
       padding="onboarding"
       gap={14}
+      overlay={<IconButton kind="close" onPress={() => router.dismissTo('/home')} />}
       header={
         <View style={[styles.header, { backgroundColor: red.bg, paddingTop: insets.top + 12 }]}>
-          <IconButton kind="close" onPress={() => router.dismissTo('/home')} />
+          {/* Room for the floating close button. */}
+          <View style={styles.closeSpace} />
           <View style={[styles.bang, { backgroundColor: red.fg }]}>
             <Text variant="figure" color="white">
               !
@@ -109,6 +110,7 @@ export default function SeeDoctorScreen() {
 }
 
 const styles = StyleSheet.create({
+  closeSpace: { height: 36 },
   header: { borderBottomLeftRadius: radius.headerBottom, borderBottomRightRadius: radius.headerBottom, paddingHorizontal: 24, paddingBottom: 24, gap: 14 },
   bang: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
   valueCard: { backgroundColor: colors.surface, borderRadius: 24, padding: 18, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 2 },

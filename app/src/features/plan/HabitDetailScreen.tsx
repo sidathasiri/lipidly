@@ -18,8 +18,7 @@ export default function HabitDetailScreen() {
 
   if (!owner || !ph) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="error" title="Habit not found" message="It may have been swapped." />
       </Screen>
     );
@@ -28,6 +27,7 @@ export default function HabitDetailScreen() {
   return (
     <Screen
       gap={12}
+      overlay={<IconButton kind="back" />}
       header={
         <View style={[styles.scene, { paddingTop: insets.top }]}>
           <View style={[styles.plate, { left: '28%' }]} />
@@ -35,9 +35,6 @@ export default function HabitDetailScreen() {
           <View style={[styles.blob, { left: '53%', top: 96, width: 52, height: 40, backgroundColor: '#86EFAC' }]} />
           <View style={[styles.blob, { left: '55%', top: 146, width: 48, height: 44, backgroundColor: '#FDBA74' }]} />
           <View style={[styles.blob, { right: 68, top: 90, width: 22, height: 22, backgroundColor: colors.cyan }]} />
-          <View style={{ position: 'absolute', left: 20, top: insets.top + 12 }}>
-            <IconButton kind="back" />
-          </View>
         </View>
       }
       footer={

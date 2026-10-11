@@ -7,8 +7,7 @@ export default function LearnScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const article = LEARN_ARTICLES[slug];
   return (
-    <Screen gap={12}>
-      <TopBar />
+    <Screen topBar={<TopBar />} gap={12}>
       {article ? (
         <>
           <Text variant="h1" accessibilityRole="header">

@@ -31,9 +31,9 @@ export default function MealsScreen() {
       { text: 'New week', onPress: startNewWeek },
     ]);
 
+  const topBar = <TopBar />;
   const header = (
     <>
-      <TopBar />
       <View style={{ gap: 4 }}>
         <Text variant="h1" accessibilityRole="header">
           Meal ideas
@@ -47,7 +47,7 @@ export default function MealsScreen() {
 
   if (!guidance?.eligible) {
     return (
-      <Screen gap={12}>
+      <Screen topBar={topBar} gap={12}>
         {header}
         <Callout tone="soft" title="Ask your doctor about meals">
           {guidance?.reason ?? 'Finish your profile to get meal ideas.'}
@@ -58,7 +58,7 @@ export default function MealsScreen() {
 
   if (job.running) {
     return (
-      <Screen gap={12}>
+      <Screen topBar={topBar} gap={12}>
         {header}
         <Card style={{ gap: 12 }}>
           <Text variant="title" accessibilityLiveRegion="polite">
@@ -75,7 +75,7 @@ export default function MealsScreen() {
 
   if (!plan) {
     return (
-      <Screen gap={12}>
+      <Screen topBar={topBar} gap={12}>
         {header}
         {job.error && <Callout tone="soft">{job.error}</Callout>}
         <ScreenState
@@ -96,6 +96,7 @@ export default function MealsScreen() {
 
   return (
     <Screen
+      topBar={topBar}
       gap={12}
       footer={<Button label="Shopping list" icon={ShoppingCart} variant="secondary" onPress={() => router.push('/plan/meals/shopping')} />}
     >

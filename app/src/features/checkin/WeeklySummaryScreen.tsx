@@ -20,8 +20,7 @@ export default function WeeklySummaryScreen() {
 
   if (!plan) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="empty" title="No plan yet" message="Your weekly summary appears once you start a plan." />
       </Screen>
     );
@@ -34,8 +33,7 @@ export default function WeeklySummaryScreen() {
   const range = `${fmtDayMonth(start).split(' ')[0]} – ${fmtDayMonth(end).split(' ')[0]} ${fmtMonth(end)}`;
 
   return (
-    <Screen gap={12}>
-      <TopBar />
+    <Screen topBar={<TopBar />} gap={12}>
       <View>
         <Text variant="small" color="muted" style={{ fontSize: 14 }}>
           {range}

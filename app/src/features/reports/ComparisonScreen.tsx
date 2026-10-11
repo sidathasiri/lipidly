@@ -19,8 +19,7 @@ export default function ComparisonScreen() {
 
   if (!after || !before) {
     return (
-      <Screen>
-        <TopBar />
+      <Screen topBar={<TopBar />}>
         <ScreenState kind="empty" title="Two reports needed" message="Comparison appears once you have two reports." />
       </Screen>
     );
@@ -41,8 +40,7 @@ export default function ComparisonScreen() {
   const title = `${fmtMonthYear(before.collectionDate).split(' ')[0]} to ${fmtMonthYear(after.collectionDate).split(' ')[0]}`;
 
   return (
-    <Screen gap={12}>
-      <TopBar />
+    <Screen topBar={<TopBar />} gap={12}>
       <Text variant="h1" accessibilityRole="header">
         {title}
       </Text>

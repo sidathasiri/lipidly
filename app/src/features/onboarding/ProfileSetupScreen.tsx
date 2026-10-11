@@ -73,17 +73,18 @@ export default function ProfileSetupScreen() {
 
   return (
     <Screen
+      topBar={
+        <TopBar
+          left="back"
+          onLeft={() => (step > 0 ? setStep(step - 1) : router.canGoBack() ? router.back() : undefined)}
+          center={<ProgressBar segments={SEGMENTS} filled={step + 1} accessibilityLabel={`Step ${step + 1} of ${SEGMENTS}`} />}
+        />
+      }
       padding="onboarding"
       gap={20}
       keyboard
       footer={<Button label={step === STEPS - 1 ? (editing ? 'Save' : 'Continue') : 'Continue'} onPress={next} disabled={!canContinue} />}
     >
-      <TopBar
-        left="back"
-        onLeft={() => (step > 0 ? setStep(step - 1) : router.canGoBack() ? router.back() : undefined)}
-        center={<ProgressBar segments={SEGMENTS} filled={step + 1} accessibilityLabel={`Step ${step + 1} of ${SEGMENTS}`} />}
-      />
-
       {step === 0 && (
         <>
           <Text variant="h1" accessibilityRole="header">
