@@ -26,6 +26,9 @@ const repoRoot = path.join(backendRoot, '..');
  */
 const MODEL_ID = 'qwen.qwen3-vl-235b-a22b-instruct';
 
+/** Meal-plan writer (text only); fastest of the models compared that kept to the meal rules. */
+const MEAL_MODEL_ID = 'mistral.mistral-large-3-675b-instruct';
+
 /**
  * The one API the app calls. Every request must carry a Cognito token; the Lambda takes the
  * user from `identity.sub`, never from arguments. Field logging stays off so health values
@@ -91,10 +94,17 @@ export class Api extends Construct {
     bucket.grantRead(reader);
     reader.addToRolePolicy(new iam.PolicyStatement({ actions: ['bedrock-mantle:CreateInference'], resources: ['*'] }));
 
+    const planner = fn('Planner', 'planner.ts', { timeout: cdk.Duration.minutes(5), environment: { MEAL_MODEL_ID }, retryAttempts: 0 });
+    table.grantReadWriteData(planner);
+    planner.addToRolePolicy(new iam.PolicyStatement({ actions: ['bedrock-mantle:CreateInference'], resources: ['*'] }));
+
     const apiFn = fn('Api', 'api.ts', {
       timeout: cdk.Duration.seconds(29),
-      environment: { READER_FUNCTION: reader.functionName, USER_POOL_ID: userPool.userPoolId },
+      environment: { READER_FUNCTION: reader.functionName, PLANNER_FUNCTION: planner.functionName, USER_POOL_ID: userPool.userPoolId, MEAL_MODEL_ID },
     });
+    planner.grantInvoke(apiFn);
+    // swapMeal writes one recipe directly.
+    apiFn.addToRolePolicy(new iam.PolicyStatement({ actions: ['bedrock-mantle:CreateInference'], resources: ['*'] }));
     table.grantReadWriteData(apiFn);
     bucket.grantReadWrite(apiFn);
     bucket.grantDelete(apiFn);
@@ -104,7 +114,7 @@ export class Api extends Construct {
     const ds = this.api.addLambdaDataSource('ApiFn', apiFn);
     const fields: [string, string[]][] = [
       ['Query', ['sync', 'readingJob', 'fileUrl']],
-      ['Mutation', ['putRecords', 'saveProfile', 'planAction', 'confirmReport', 'confirmPrescription', 'createUploadUrl', 'startReading', 'deleteAccount']],
+      ['Mutation', ['putRecords', 'saveProfile', 'planAction', 'confirmReport', 'confirmPrescription', 'createUploadUrl', 'startReading', 'startMealPlan', 'swapMeal', 'deleteAccount']],
     ];
     for (const [typeName, names] of fields) {
       for (const fieldName of names) ds.createResolver(`${typeName}${fieldName}`, { typeName, fieldName });

@@ -4,3 +4,4 @@ export * from './ownHabits';
 export * from './plan-builder';
 export * from './mutations';
 export * from './records';
+export * from './meals';

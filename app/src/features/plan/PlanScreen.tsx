@@ -1,11 +1,13 @@
 import { MARKER_LABELS, addDays, weeklySummary } from '@lipidly/rules';
+import { latestMealPlan } from '@lipidly/domain';
 import { router } from 'expo-router';
+import { ChefHat } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { fmtDayMonth, fmtTime, fmtWeekdayDate } from '@/lib/format';
 import { MAX_OWN_HABITS, ownAsPlanHabits } from '@/state/actions/ownHabits';
 import { useOverview } from '@/state/hooks';
 import { today } from '@/state/ids';
-import { AddRow, Button, Callout, Card, Chip, colors, ColouredHeader, Screen, ScreenState, Section, StatusChip, Text } from '@/ui';
+import { AddRow, Button, Callout, Card, Chip, colors, ColouredHeader, ListGroup, ListRow, Screen, ScreenState, Section, StatusChip, Text } from '@/ui';
 import { HabitRow } from './HabitRow';
 
 /** The current plan: focus marker, habits, retest date and mode (11). */
@@ -123,6 +125,15 @@ export default function PlanScreen() {
           )}
         </View>
       </Section>
+      <ListGroup>
+        <ListRow
+          icon={ChefHat}
+          iconTone="sky"
+          title="Meal ideas"
+          subtitle={latestMealPlan(data) ? 'Your week of meals and shopping list' : 'A week of heart-healthy meals with recipes'}
+          onPress={() => router.push('/plan/meals')}
+        />
+      </ListGroup>
       <Card style={styles.retest}>
         <View style={{ flex: 1 }}>
           <Text variant="small" color="muted">

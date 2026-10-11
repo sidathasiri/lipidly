@@ -122,3 +122,10 @@ export async function readingJob<R>(id: string): Promise<ReadingJob<R> | undefin
 export async function deleteAccountOnServer() {
   await gql<{ deleteAccount: boolean }>('mutation { deleteAccount }');
 }
+
+// ── Meal plans ────────────────────────────────────────────────────────────────
+
+export async function startMealPlan(today: string) {
+  const data = await gql<{ startMealPlan: { id: string } }>('mutation ($today: AWSDate!) { startMealPlan(today: $today) { id } }', { today });
+  return data.startMealPlan.id;
+}

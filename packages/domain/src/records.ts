@@ -18,7 +18,9 @@ export type RecordType =
   | 'MED'
   | 'DOSE'
   | 'APPT'
-  | 'ESC';
+  | 'ESC'
+  | 'MEALPLAN'
+  | 'SHOPPING';
 
 export interface DataRecord {
   sk: string;
@@ -32,10 +34,10 @@ export interface DataRecord {
 
 /**
  * Records the phone may write directly (simple user choices). Everything else is written only
- * by a Lambda, because it comes from the rule engine: profile (escalation), reports, plans,
- * doctor habits, prescriptions and escalations.
+ * by a Lambda, because it comes from the rule engine or the AI: profile (escalation), reports,
+ * plans, doctor habits, prescriptions, escalations and meal plans.
  */
-export const CLIENT_WRITABLE: ReadonlySet<RecordType> = new Set(['SETTINGS', 'CONSENT', 'OWNHABIT', 'CHECKIN', 'MED', 'DOSE', 'APPT']);
+export const CLIENT_WRITABLE: ReadonlySet<RecordType> = new Set(['SETTINGS', 'CONSENT', 'OWNHABIT', 'CHECKIN', 'MED', 'DOSE', 'APPT', 'SHOPPING']);
 
 export const SK_PREFIX: Record<RecordType, string> = {
   SETTINGS: 'SETTINGS',
@@ -51,6 +53,8 @@ export const SK_PREFIX: Record<RecordType, string> = {
   DOSE: 'DOSE#',
   APPT: 'APPT#',
   ESC: 'ESC#',
+  MEALPLAN: 'MEALPLAN#',
+  SHOPPING: 'SHOPPING#',
 };
 
 /** True when a sort key belongs to its declared type (checked by the server on every write). */
@@ -72,6 +76,8 @@ export function toRecords(d: UserData): DataRecord[] {
   for (const e of d.doses) out.push({ sk: `DOSE#${e.date}T${e.time}#${e.medicineId}`, type: 'DOSE', data: e });
   for (const a of d.appointments) out.push({ sk: `APPT#${a.id}`, type: 'APPT', data: a });
   for (const e of d.escalations) out.push({ sk: `ESC#${e.id}`, type: 'ESC', data: e });
+  for (const p of d.mealPlans ?? []) out.push({ sk: `MEALPLAN#${p.id}`, type: 'MEALPLAN', data: p });
+  for (const [planId, checked] of Object.entries(d.shoppingChecked ?? {})) out.push({ sk: `SHOPPING#${planId}`, type: 'SHOPPING', data: { planId, checked } });
   return out;
 }
 
@@ -135,6 +141,15 @@ export function applyRecords(d: UserData, records: DataRecord[]) {
       case 'ESC':
         d.escalations = upsert(d.escalations, (x) => x.id, id, v);
         break;
+      case 'MEALPLAN':
+        d.mealPlans = upsert(d.mealPlans ?? [], (x) => x.id, id, v).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        break;
+      case 'SHOPPING': {
+        const rest = { ...d.shoppingChecked };
+        delete rest[id];
+        d.shoppingChecked = v ? { ...rest, [id]: (v as { checked: string[] }).checked } : rest;
+        break;
+      }
     }
   }
 }

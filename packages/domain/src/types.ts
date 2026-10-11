@@ -30,6 +30,59 @@ export interface UserProfile extends Profile {
   heightCm?: number;
   weightKg?: number;
   takesLipidMedicine: 'yes' | 'no' | 'notSure';
+  /** Meal-plan preferences (spec F13). Missing until the user answers them. */
+  food?: FoodPreferences;
+}
+
+export type DietType = 'everything' | 'vegetarian' | 'vegan' | 'pescatarian';
+
+export interface FoodPreferences {
+  /** Option values (`sriLankan`, `western`) or the user's own words, e.g. "Thai". */
+  cuisines: string[];
+  dietType: DietType;
+  /** Option values (`beef`, `pork`, …) or the user's own words. */
+  avoid: string[];
+  /** Optional free text for the meal writer, e.g. "I like spicy food, no mushrooms". */
+  notes?: string;
+}
+
+// ── Meal plans (spec F13) ─────────────────────────────────────────────────────
+
+export type MealSlot = 'breakfast' | 'morningSnack' | 'lunch' | 'afternoonSnack' | 'dinner';
+
+export type IngredientUnit = 'g' | 'kg' | 'ml' | 'l' | 'cup' | 'tbsp' | 'tsp' | 'piece' | 'clove' | 'slice' | 'bunch' | 'pinch' | 'to taste';
+
+export type ShoppingCategory = 'vegetables' | 'fruit' | 'grains' | 'protein' | 'dairy' | 'pantry' | 'spices';
+
+export interface Ingredient {
+  /** Plain shopping name, lower case and singular, e.g. "red onion". */
+  name: string;
+  quantity: number;
+  unit: IngredientUnit;
+  category: ShoppingCategory;
+}
+
+export interface Meal {
+  slot: MealSlot;
+  title: string;
+  /** One line on what it is and why it suits the plan. */
+  summary: string;
+  minutes: number;
+  servings: number;
+  ingredients: Ingredient[];
+  steps: string[];
+}
+
+export interface MealDay {
+  date: IsoDate;
+  meals: Meal[];
+}
+
+export interface MealPlan {
+  id: string;
+  weekStart: IsoDate;
+  createdAt: string;
+  days: MealDay[];
 }
 
 export interface StoredMarker {
@@ -233,4 +286,8 @@ export interface UserData {
   reminders: ReminderSettings;
   /** "Remind me to get tested" from the no-report state. */
   testReminder?: IsoDate;
+  /** The current week of meal ideas (only the latest is kept). Missing in older data. */
+  mealPlans?: MealPlan[];
+  /** Shopping-list items ticked off, per meal plan ID. */
+  shoppingChecked?: Record<string, string[]>;
 }

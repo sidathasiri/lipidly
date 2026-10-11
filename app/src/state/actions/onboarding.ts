@@ -2,7 +2,7 @@ import { saveProfile as applyProfile } from '@lipidly/domain';
 import type { LifestyleAnswers } from '@lipidly/rules';
 import { newId, today } from '../ids';
 import { currentUserData, enqueue, isSyncedSession, setState, updateUser } from '../store';
-import type { UserProfile } from '../types';
+import type { FoodPreferences, UserProfile } from '../types';
 
 export const POLICY_VERSION = 'privacy-2026-10';
 
@@ -38,9 +38,10 @@ export function saveProfile(profile: UserProfile) {
   enqueue({ id: newId('op_'), op: 'saveProfile', variables: { profile, today: t } });
 }
 
-export function saveLifestyle(lifestyle: LifestyleAnswers) {
+/** "What fits your life": lifestyle answers and food preferences for meal plans (F13). */
+export function saveLifestyle(lifestyle: LifestyleAnswers, food: FoodPreferences) {
   const profile = currentUserData().profile;
-  if (profile) saveProfile({ ...profile, lifestyle });
+  if (profile) saveProfile({ ...profile, lifestyle, food });
 }
 
 export function finishOnboarding() {

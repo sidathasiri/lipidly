@@ -11,14 +11,14 @@ type Query {
   ping: Ping!
   "Records changed after `since` (all records when omitted), a page at a time."
   sync(since: String, nextToken: String): SyncPage!
-  "A document reading started with startReading."
+  "A job started with startReading or startMealPlan."
   readingJob(id: ID!): ReadingJob
   "A short-lived link to view an uploaded original."
   fileUrl(key: String!): String!
 }
 
 type Mutation {
-  "Client-writable records: settings, consent, own habits, check-ins, medicines, doses, appointments."
+  "Client-writable records: settings, consent, own habits, check-ins, medicines, doses, appointments, shopping ticks."
   putRecords(records: [RecordInput!]!): [DataRecord!]!
   saveProfile(profile: AWSJSON!, today: AWSDate!): MutationResult!
   "A PlanAction from @lipidly/domain (commit, swap, start, retest, reminder)."
@@ -27,8 +27,12 @@ type Mutation {
   confirmPrescription(prescription: AWSJSON!, today: AWSDate!): MutationResult!
   "A presigned PUT for one file (JPEG, PNG or PDF), valid for 5 minutes."
   createUploadUrl(kind: FileKind!, contentType: String!): UploadTarget!
-  "Reads uploaded files with Claude on Bedrock. Poll readingJob for the result."
+  "Reads uploaded files with a vision model on Bedrock. Poll readingJob for the result."
   startReading(kind: FileKind!, fileKeys: [String!]!): ReadingJob!
+  "Writes a week of meal ideas from today. Poll readingJob, then sync for the new plan."
+  startMealPlan(today: AWSDate!): ReadingJob!
+  "Replaces one meal in the current meal plan with a new recipe."
+  swapMeal(planId: ID!, date: AWSDate!, slot: String!, today: AWSDate!): MutationResult!
   "Deletes all of the user's data and files, then the sign-in account."
   deleteAccount: Boolean!
 }
@@ -74,17 +78,24 @@ type UploadTarget {
   url: String!
 }
 
+enum JobKind {
+  report
+  prescription
+  mealPlan
+}
+
 enum JobStatus {
   pending
   done
   failed
 }
 
+"A background job: reading a document, or writing a meal plan."
 type ReadingJob {
   id: ID!
-  kind: FileKind!
+  kind: JobKind!
   status: JobStatus!
-  "The extracted report or prescription, when done."
+  "When done: the extracted report or prescription, or { planId } for a meal plan."
   result: AWSJSON
   error: String
 }

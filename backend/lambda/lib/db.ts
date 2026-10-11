@@ -107,7 +107,7 @@ export type JobStatus = 'pending' | 'done' | 'failed';
 
 export interface Job {
   id: string;
-  kind: 'report' | 'prescription';
+  kind: 'report' | 'prescription' | 'mealPlan';
   status: JobStatus;
   result?: unknown;
   error?: string;

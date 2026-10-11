@@ -10,6 +10,8 @@ import {
   confirmPrescription,
   confirmReport,
   diffRecords,
+  mealGuidanceFor,
+  replaceMeal,
   saveProfile,
   skMatchesType,
   type ConfirmedValues,
@@ -23,6 +25,7 @@ import {
 } from '@lipidly/domain';
 import type { AppSyncIdentityCognito, AppSyncResolverEvent } from 'aws-lambda';
 import { deletePartition, getJob, loadUserData, putJob, syncPage, writeRecords } from './lib/db';
+import { writeReplacement } from './lib/meals';
 
 /**
  * The API Lambda: one function for every AppSync field except ping, routed by field name.
@@ -48,10 +51,12 @@ const json = <T>(v: unknown): T => (typeof v === 'string' ? JSON.parse(v) : v) a
 class UserError extends Error {}
 
 /** Applies a domain mutation to the user's stored data and saves what changed. */
-async function mutate<T>(sub: string, change: (d: UserData) => T) {
+const mutate = <T>(sub: string, change: (d: UserData) => T) => mutateAsync(sub, async (d) => change(d));
+
+async function mutateAsync<T>(sub: string, change: (d: UserData) => Promise<T>) {
   const before = await loadUserData(sub);
   const after = clone(before);
-  const info = change(after);
+  const info = await change(after);
   const { puts, deletes } = diffRecords(before, after);
   const records = await writeRecords(sub, [...puts, ...deletes]);
   return { records, info: info ?? null };
@@ -134,6 +139,29 @@ async function route(field: string, a: Args, identity: AppSyncIdentityCognito) {
       );
       return { ...job, result: null, error: null };
     }
+    case 'startMealPlan': {
+      const d = await loadUserData(sub);
+      const guidance = mealGuidanceFor(d);
+      if (!d.profile || !guidance) throw new UserError('Please finish your profile first.');
+      if (!guidance.eligible) throw new UserError(guidance.reason ?? 'Meal plans aren’t available for you.');
+      const job = { id: randomUUID(), kind: 'mealPlan' as const, status: 'pending' as const };
+      await putJob(sub, job);
+      await lambda.send(
+        new InvokeCommand({ FunctionName: process.env.PLANNER_FUNCTION!, InvocationType: 'Event', Payload: JSON.stringify({ sub, jobId: job.id, weekStart: today }) }),
+      );
+      return { ...job, result: null, error: null };
+    }
+    case 'swapMeal':
+      return mutateAsync(sub, async (d) => {
+        const guidance = mealGuidanceFor(d);
+        if (!d.profile || !guidance?.eligible) throw new UserError(guidance?.reason ?? 'Please finish your profile first.');
+        const plan = d.mealPlans?.find((p) => p.id === a.planId);
+        const day = plan?.days.find((x) => x.date === a.date);
+        const current = day?.meals.find((m) => m.slot === a.slot);
+        if (!plan || !day || !current) throw new UserError('That meal is no longer in your plan.');
+        const meal = await writeReplacement(d.profile, guidance, current.slot, current, day.meals);
+        replaceMeal(d, plan.id, day.date, meal);
+      });
     case 'readingJob': {
       const job = await getJob(sub, a.id as string);
       return job ? { ...job, result: job.result ?? null, error: job.error ?? null } : null;

@@ -3,7 +3,8 @@ import { extractPrescription, extractReport } from '@/dev/mockReading';
 import { newId, today } from '@/state/ids';
 import { isSyncedSession } from '@/state/store';
 import type { DraftReport, ExtractedPrescription, ReportSource, StoredMarker } from '@/state/types';
-import { createUploadUrl, readingJob, startReading, type FileKind } from './api';
+import { createUploadUrl, startReading, type FileKind } from './api';
+import { JobError as ReadingError, waitForJob } from './jobs';
 
 /**
  * Reading a lab report or prescription: each page is uploaded to S3 through a short-lived link,
@@ -15,25 +16,15 @@ export type ExtractionStep = 'uploading' | 'reading' | 'checking';
 type OnStep = (step: ExtractionStep, progress: number) => void;
 
 /** Shown to the user as is. */
-export class ReadingError extends Error {}
+export { JobError as ReadingError } from './jobs';
 
 /** Longest side sent for photos: enough to read small print, small enough to upload quickly. */
 const MAX_SIDE = 2000;
-const POLL_MS = 2000;
 const TIMEOUT_MS = 3 * 60 * 1000;
 
 const cancelled = (signal?: AbortSignal) => {
   if (signal?.aborted) throw new Error('cancelled');
 };
-
-const wait = (ms: number, signal?: AbortSignal) =>
-  new Promise<void>((resolve, reject) => {
-    const t = setTimeout(resolve, ms);
-    signal?.addEventListener('abort', () => {
-      clearTimeout(t);
-      reject(new Error('cancelled'));
-    });
-  });
 
 /** Photos become JPEGs no larger than MAX_SIDE (also converts HEIC); PDFs go as they are. */
 async function prepare(uri: string, isPdf: boolean): Promise<{ uri: string; type: string }> {
@@ -68,19 +59,14 @@ async function read<R>(kind: FileKind, uris: string[], isPdf: boolean, onStep: O
   cancelled(signal);
   const jobId = await startReading(kind, fileKeys);
   onStep('reading', 0.45);
-  const started = Date.now();
-  for (;;) {
-    await wait(POLL_MS, signal);
-    const job = await readingJob<R>(jobId);
-    if (job?.status === 'done' && job.result) {
-      onStep('checking', 0.95);
-      return { result: job.result, fileKeys };
-    }
-    if (!job || job.status === 'failed') throw new ReadingError(job?.error ?? 'We couldn’t read this document. Please try again.');
-    if (Date.now() - started > TIMEOUT_MS) throw new ReadingError('Reading is taking too long. Please try again.');
-    const elapsed = (Date.now() - started) / 30000;
-    onStep(elapsed > 0.5 ? 'checking' : 'reading', Math.min(0.9, 0.45 + 0.45 * elapsed));
-  }
+  const result = await waitForJob<R>(jobId, {
+    timeoutMs: TIMEOUT_MS,
+    fallbackError: 'We couldn’t read this document. Please try again.',
+    signal,
+    onTick: (ms) => onStep(ms > 15000 ? 'checking' : 'reading', Math.min(0.9, 0.45 + (0.45 * ms) / 30000)),
+  });
+  onStep('checking', 0.95);
+  return { result, fileKeys };
 }
 
 interface ReportResult {

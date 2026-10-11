@@ -1,6 +1,6 @@
 import type { ChoiceOption } from '@/ui';
 import type { Equipment, HealthCondition, LifestyleAnswers, PhysicalLimit, Place, TimeFree } from '@lipidly/rules';
-import type { UserProfile } from '@/state/types';
+import type { DietType, FoodPreferences, UserProfile } from '@/state/types';
 
 /** Answer options shared by onboarding and profile editing. Labels follow the design copy. */
 
@@ -89,4 +89,41 @@ export const lifestyleSummary = (l: LifestyleAnswers) => {
   const places = l.places.map((p) => ({ home: 'home', outdoors: 'outdoors', gym: 'gym' })[p]).join(' or ') || 'no place';
   const equipment = l.equipment.filter((e) => e !== 'none');
   return [labelOf(TIME_OPTIONS, l.timeFree), places, equipment.length ? equipment.join(', ') : 'no equipment'].join(' · ');
+};
+
+// ── Food preferences (meal plans, F13) ────────────────────────────────────────
+
+export const CUISINE_OPTIONS: ChoiceOption<string>[] = [
+  { value: 'sriLankan', label: 'Sri Lankan' },
+  { value: 'western', label: 'Western' },
+];
+
+export const DIET_OPTIONS: ChoiceOption<DietType>[] = [
+  { value: 'everything', label: 'I eat everything' },
+  { value: 'pescatarian', label: 'Fish, no meat' },
+  { value: 'vegetarian', label: 'Vegetarian' },
+  { value: 'vegan', label: 'Vegan' },
+];
+
+export const AVOID_OPTIONS: ChoiceOption<string>[] = [
+  { value: 'beef', label: 'Beef' },
+  { value: 'pork', label: 'Pork' },
+  { value: 'seafood', label: 'Seafood' },
+  { value: 'dairy', label: 'Dairy' },
+  { value: 'eggs', label: 'Eggs' },
+  { value: 'nuts', label: 'Nuts' },
+  { value: 'gluten', label: 'Gluten' },
+  { value: 'mushrooms', label: 'Mushrooms' },
+];
+
+export const DEFAULT_FOOD: FoodPreferences = { cuisines: ['sriLankan', 'western'], dietType: 'everything', avoid: [] };
+
+const optionValues = (options: ChoiceOption<string>[]) => new Set(options.map((o) => o.value));
+const CUISINE_VALUES = optionValues(CUISINE_OPTIONS);
+const AVOID_VALUES = optionValues(AVOID_OPTIONS);
+
+/** Splits stored lists into chip values and the user's own words (the chips' "+ Other"). */
+export const splitChoices = (values: string[], kind: 'cuisine' | 'avoid') => {
+  const known = kind === 'cuisine' ? CUISINE_VALUES : AVOID_VALUES;
+  return { chips: values.filter((v) => known.has(v)), other: values.filter((v) => !known.has(v)) };
 };

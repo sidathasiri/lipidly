@@ -24,6 +24,8 @@ export const emptyUserData = (): UserData => ({
   doses: [],
   appointments: [],
   escalations: [],
+  mealPlans: [],
+  shoppingChecked: {},
   reminders: { ...DEFAULT_REMINDERS },
 });
 

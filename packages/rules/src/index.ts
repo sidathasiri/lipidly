@@ -8,3 +8,4 @@ export * from './habit-library';
 export * from './habits';
 export * from './plan';
 export * from './progress';
+export * from './meals';

@@ -4,12 +4,26 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { saveLifestyle } from '@/state/actions/onboarding';
 import { useUserData } from '@/state/hooks';
-import { Button, ChipGroup, ProgressBar, Screen, Section, Text, TopBar } from '@/ui';
-import { COOKS_OPTIONS, DEFAULT_LIFESTYLE, EATS_OUT_OPTIONS, EQUIPMENT_OPTIONS, LIMIT_OPTIONS, PLACE_OPTIONS, TIME_OPTIONS } from './options';
+import { Button, ChipGroup, ProgressBar, Screen, Section, Text, TextField, TopBar } from '@/ui';
+import type { FoodPreferences } from '@/state/types';
+import {
+  AVOID_OPTIONS,
+  COOKS_OPTIONS,
+  CUISINE_OPTIONS,
+  DEFAULT_FOOD,
+  DEFAULT_LIFESTYLE,
+  DIET_OPTIONS,
+  EATS_OUT_OPTIONS,
+  EQUIPMENT_OPTIONS,
+  LIMIT_OPTIONS,
+  PLACE_OPTIONS,
+  splitChoices,
+  TIME_OPTIONS,
+} from './options';
 
 /**
- * "What fits your life" (36): five questions that decide which habits are offered (F1.9).
- * With `edit=1` it is opened from Profile and saves in place.
+ * "What fits your life" (36): five questions that decide which habits are offered (F1.9), and
+ * food preferences for meal plans (F13). With `edit=1` it is opened from Profile and saves in place.
  */
 export default function LifestyleScreen() {
   const { edit } = useLocalSearchParams<{ edit?: string }>();
@@ -18,15 +32,18 @@ export default function LifestyleScreen() {
   const [l, setL] = useState<LifestyleAnswers>(profile?.lifestyle ?? DEFAULT_LIFESTYLE);
   const set = (patch: Partial<LifestyleAnswers>) => setL((x) => ({ ...x, ...patch }));
   const setOther = (key: keyof NonNullable<LifestyleAnswers['other']>, values: string[]) => set({ other: { ...l.other, [key]: values } });
+  const [food, setFood] = useState<FoodPreferences>(profile?.food ?? DEFAULT_FOOD);
+  const cuisines = splitChoices(food.cuisines, 'cuisine');
+  const avoid = splitChoices(food.avoid, 'avoid');
 
   const save = () => {
-    saveLifestyle(l);
+    saveLifestyle(l, { ...food, notes: food.notes?.trim() || undefined });
     if (editing) router.back();
     else router.replace('/onboarding/first-report');
   };
 
   return (
-    <Screen padding="onboarding" gap={14} footer={<Button label={editing ? 'Save' : 'Continue'} onPress={save} disabled={l.places.length === 0 && !l.other?.places?.length} />}>
+    <Screen padding="onboarding" gap={14} footer={<Button label={editing ? 'Save' : 'Continue'} onPress={save} disabled={(l.places.length === 0 && !l.other?.places?.length) || food.cuisines.length === 0} />}>
       <TopBar left="back" center={editing ? undefined : <ProgressBar segments={6} filled={5} accessibilityLabel="Step 5 of 6" />} />
       <View style={{ gap: 4 }}>
         <Text variant="h1" accessibilityRole="header">
@@ -71,6 +88,42 @@ export default function LifestyleScreen() {
           Eat out or from a canteen
         </Text>
         <ChipGroup dense options={EATS_OUT_OPTIONS} value={[l.eatsOut]} onChange={([eatsOut]) => set({ eatsOut: eatsOut! })} />
+      </Section>
+      <Section title="Food you like" gap={8}>
+        <Text variant="small" color="muted">
+          For your meal ideas. Add any cuisine you enjoy.
+        </Text>
+        <ChipGroup
+          dense
+          multiple
+          options={CUISINE_OPTIONS}
+          value={cuisines.chips}
+          onChange={(chips) => setFood((f) => ({ ...f, cuisines: [...chips, ...cuisines.other] }))}
+          other={{ values: cuisines.other, onChange: (other) => setFood((f) => ({ ...f, cuisines: [...cuisines.chips, ...other] })) }}
+        />
+        <Text variant="small" color="muted">
+          How you eat
+        </Text>
+        <ChipGroup dense options={DIET_OPTIONS} value={[food.dietType]} onChange={([dietType]) => setFood((f) => ({ ...f, dietType: dietType! }))} />
+        <Text variant="small" color="muted">
+          Foods to leave out
+        </Text>
+        <ChipGroup
+          dense
+          multiple
+          options={AVOID_OPTIONS}
+          value={avoid.chips}
+          onChange={(chips) => setFood((f) => ({ ...f, avoid: [...chips, ...avoid.other] }))}
+          other={{ values: avoid.other, onChange: (other) => setFood((f) => ({ ...f, avoid: [...avoid.chips, ...other] })) }}
+        />
+        <TextField
+          label="Anything else? (optional)"
+          value={food.notes ?? ''}
+          onChangeText={(notes) => setFood((f) => ({ ...f, notes }))}
+          placeholder="e.g. I like spicy food, quick breakfasts"
+          multiline
+          maxLength={400}
+        />
       </Section>
     </Screen>
   );
