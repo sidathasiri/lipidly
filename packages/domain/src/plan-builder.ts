@@ -10,6 +10,10 @@ import {
   type ReportOutcome,
 } from '@lipidly/rules';
 import { newId } from './defaults';
+import { weeklyHabitFor } from './engagement';
+import { activePlan } from './plans';
+
+export { activePlan, openEscalation } from './plans';
 import { ownAsPlanHabits } from './ownHabits';
 import type { EscalationRecord, Plan, PlanHabit, Report, UserData } from './types';
 
@@ -34,11 +38,16 @@ export const appPlanHabit = (h: Habit, committed = false, id: string = newId('ph
 const doctorPlanHabits = (d: UserData): PlanHabit[] =>
   d.doctorHabits.map((dh) => ({ id: `doc_${dh.id}`, source: 'doctor', title: dh.text, question: dh.question, committed: true }));
 
-export const activePlan = (d: UserData): Plan | undefined => d.plans.find((p) => p.status === 'active');
 
-/** Everything asked in the daily check-in: the plan's committed habits, then the user's own. */
-export const dailyHabits = (d: UserData, plan: Plan | undefined = activePlan(d)): PlanHabit[] =>
-  plan ? [...plan.habits.filter((h) => h.committed), ...ownAsPlanHabits(d)] : [];
+/**
+ * Everything asked in the daily check-in: the plan's committed habits, this week's rotating habit
+ * (when `today` is given), then the user's own.
+ */
+export const dailyHabits = (d: UserData, plan: Plan | undefined = activePlan(d), today?: IsoDate): PlanHabit[] => {
+  if (!plan) return [];
+  const weekly = today && plan.status === 'active' ? weeklyHabitFor(d, today) : undefined;
+  return [...plan.habits.filter((h) => h.committed), ...(weekly ? [weekly] : []), ...ownAsPlanHabits(d)];
+};
 export const proposedPlan = (d: UserData): Plan | undefined => d.plans.find((p) => p.status === 'proposed');
 
 /** Share of expected habit check-ins kept since the plan started. */
@@ -133,9 +142,3 @@ export function applyEscalation(d: UserData, esc: EscalationRecord, today: IsoDa
     escalationId: esc.id,
   });
 }
-
-/** The escalation behind the current plan, if the plan follows one. */
-export const openEscalation = (d: UserData): EscalationRecord | undefined => {
-  const id = activePlan(d)?.escalationId;
-  return id ? d.escalations.find((e) => e.id === id) : undefined;
-};

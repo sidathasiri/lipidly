@@ -1,4 +1,5 @@
 import type {
+  Difficulty,
   Escalation,
   FocusGroup,
   FocusMarker,
@@ -121,14 +122,18 @@ export interface Report extends DraftReport {
 
 export interface PlanHabit {
   id: string;
-  /** `own` = a habit the user added (F4.15); never used by the plan rules. */
-  source: 'app' | 'doctor' | 'own';
+  /** `own` = a habit the user added (F4.15); never used by the plan rules. `weekly` = this week's rotating habit (F14.2), never stored in a plan. */
+  source: 'app' | 'doctor' | 'own' | 'weekly';
   /** Library habit (app habits). */
   habitId?: string;
   title: string;
   question: string;
   committed: boolean;
   reminderTime?: string;
+  /** Library habits: current level (F14.1); missing = 1. Title and question follow the level. */
+  level?: number;
+  /** Date the current level started (plan start for level 1). */
+  levelSince?: IsoDate;
 }
 
 export interface Plan {
@@ -292,4 +297,17 @@ export interface UserData {
   mealPlans?: MealPlan[];
   /** Shopping-list items ticked off, per meal plan ID. */
   shoppingChecked?: Record<string, string[]>;
+  /** Weekly bonus goal progress, per week start (F14.3). */
+  weeklyGoals?: Record<IsoDate, WeeklyGoalProgress>;
+  /** "How did it feel?" per plan habit, per week start (F14.5). */
+  reflections?: Record<IsoDate, Record<string, Difficulty>>;
+  /** Milestones already celebrated (F14.4). */
+  celebrated?: string[];
+  /** Level offers the user said "not yet" to: plan habit ID → hidden until this date. */
+  snoozedOffers?: Record<string, IsoDate>;
+}
+
+export interface WeeklyGoalProgress {
+  goalId: string;
+  count: number;
 }

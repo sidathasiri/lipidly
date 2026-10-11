@@ -1,9 +1,11 @@
-import { habitById, needsDoctorAdvice, needsLabels } from '@lipidly/rules';
+import { canAdoptWeekly, levelOf, weeklyHabitFor } from '@lipidly/domain';
+import { habitById, habitLevel, maxLevel, needsDoctorAdvice, needsLabels } from '@lipidly/rules';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fmtTime } from '@/lib/format';
-import { setHabitReminder } from '@/state/actions/plan';
+import { adoptWeeklyHabit, setHabitReminder } from '@/state/actions/plan';
+import { today } from '@/state/ids';
 import { useOverview } from '@/state/hooks';
 import { Button, Callout, Chip, colors, DateField, IconButton, radius, Screen, ScreenState, Section, Text, TopBar } from '@/ui';
 
@@ -11,12 +13,16 @@ import { Button, Callout, Chip, colors, DateField, IconButton, radius, Screen, S
 export default function HabitDetailScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { plan, proposal, profile } = useOverview();
+  const { data, plan, proposal, profile } = useOverview();
   const owner = [plan, proposal].find((p) => p?.habits.some((h) => h.id === id));
-  const ph = owner?.habits.find((h) => h.id === id);
+  // This week's rotating habit isn't stored in the plan (F14.2).
+  const weekly = weeklyHabitFor(data, today());
+  const ph = owner?.habits.find((h) => h.id === id) ?? (weekly?.id === id ? weekly : undefined);
   const habit = ph?.habitId ? habitById(ph.habitId) : undefined;
+  const levels = habit ? maxLevel(habit) : 1;
+  const level = ph ? levelOf(ph) : 1;
 
-  if (!owner || !ph) {
+  if (!ph) {
     return (
       <Screen topBar={<TopBar />}>
         <ScreenState kind="error" title="Habit not found" message="It may have been swapped." />
@@ -38,14 +44,34 @@ export default function HabitDetailScreen() {
         </View>
       }
       footer={
-        habit && owner.status === 'active' ? (
+        habit && owner?.status === 'active' && ph.source === 'app' ? (
           <Button label="Swap this habit" variant="secondary" onPress={() => router.push({ pathname: '/plan/swap/[id]', params: { id: ph.id } })} />
+        ) : ph.source === 'weekly' && plan && canAdoptWeekly(plan) && habit ? (
+          <Button
+            label="Keep it as a daily habit"
+            onPress={() => {
+              adoptWeeklyHabit(plan.id, habit.id);
+              router.back();
+            }}
+          />
         ) : undefined
       }
     >
       <Text variant="h2" accessibilityRole="header">
-        {habit?.title ?? ph.title}
+        {habit ? habitLevel(habit, level).title : ph.title}
       </Text>
+      {ph.source === 'weekly' && (
+        <Callout tone="sky" title="Habit of the week">
+          A new habit every week, picked for your plan. It&apos;s in your check-in this week and doesn&apos;t change your plan. Keep it if you like it.
+        </Callout>
+      )}
+      {ph.source === 'app' && habit && levels > 1 && (
+        <Callout tone="tint" title={`Level ${level} of ${levels}`}>
+          {level < levels
+            ? `Next level: “${habitLevel(habit, level + 1).title}”. You’ll be offered it once this one feels easy.`
+            : 'You’ve reached the top level of this habit. Keep it going.'}
+        </Callout>
+      )}
       {ph.source === 'doctor' ? (
         <Callout tone="tint" title="From your doctor">
           This instruction came from your doctor, so it always comes first. Ask your doctor if you have questions about it.
@@ -95,7 +121,7 @@ export default function HabitDetailScreen() {
             value={ph.reminderTime}
             display={ph.reminderTime ? fmtTime(ph.reminderTime) : 'Off'}
             placeholder="Set a time"
-            onChange={(time) => setHabitReminder(owner.id, ph.id, time)}
+            onChange={(time) => owner && setHabitReminder(owner.id, ph.id, time)}
           />
         </View>
       )}

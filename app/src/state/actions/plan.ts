@@ -1,4 +1,4 @@
-import { applyPlanAction, type PlanAction } from '@lipidly/domain';
+import { applyPlanAction, snoozeOffer, type PlanAction } from '@lipidly/domain';
 import type { IsoDate } from '@lipidly/rules';
 import { newId, today } from '../ids';
 import { enqueue, updateUser } from '../store';
@@ -31,3 +31,16 @@ export const setRetestDate = (planId: string, date: IsoDate) => run({ action: 'r
 
 export const setHabitReminder = (planId: string, planHabitId: string, time: string | undefined) =>
   run({ action: 'reminder', planId, habitId: planHabitId, time });
+
+/** Habit levels (F14.1): move one level up or down. */
+export const changeLevel = (planId: string, planHabitId: string, level: number) => run({ action: 'level', planId, habitId: planHabitId, level });
+
+/** Keeps this week's habit as a core habit (F14.2). */
+export const adoptWeeklyHabit = (planId: string, libraryHabitId: string) =>
+  run({ action: 'adopt', planId, libraryHabitId, newPlanHabitId: newId('ph_') });
+
+/** "Not yet" on a level offer: asked again in a week. */
+export function snoozeLevelOffer(planHabitId: string) {
+  const t = today();
+  updateUser((d) => snoozeOffer(d, planHabitId, t));
+}

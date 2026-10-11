@@ -28,6 +28,7 @@ import {
 } from '@/ui';
 import { habitVisual } from '../plan/habitVisual';
 import { CheckInsCard } from './CheckInsCard';
+import { WeeklyGoalCard } from './WeeklyGoalCard';
 
 export default function HomeScreen() {
   const { data, profile, plan, proposal, latestReport, escalation } = useOverview();
@@ -158,6 +159,7 @@ export default function HomeScreen() {
         )}
       </View>
 
+      {plan && <WeeklyGoalCard />}
       {plan && <CheckInsCard checkIns={data.checkIns} />}
 
       {next && (

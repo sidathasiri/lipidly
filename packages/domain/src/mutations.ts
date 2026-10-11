@@ -9,6 +9,7 @@ import {
   type IsoDate,
 } from '@lipidly/rules';
 import { newId } from './defaults';
+import { adoptHabit, setHabitLevel } from './engagement';
 import { appPlanHabit, applyEscalation, applyOutcome, previousCycle } from './plan-builder';
 import type { DraftReport, ExtractedPrescription, Report, StoredMarker, UserData, UserProfile } from './types';
 
@@ -123,7 +124,11 @@ export type PlanAction =
   | { action: 'swap'; planId: string; habitId: string; newHabitId: string; newPlanHabitId: string }
   | { action: 'start'; planId: string }
   | { action: 'retest'; planId: string; date: IsoDate }
-  | { action: 'reminder'; planId: string; habitId: string; time?: string };
+  | { action: 'reminder'; planId: string; habitId: string; time?: string }
+  /** Habit levels (F14.1): one step up or down. */
+  | { action: 'level'; planId: string; habitId: string; level: number }
+  /** Keep the habit of the week (a library habit ID) as a core habit (F14.2). */
+  | { action: 'adopt'; planId: string; libraryHabitId: string; newPlanHabitId: string };
 
 /** One entry point for every plan change, so the app and the Lambda run the same switch. */
 export function applyPlanAction(d: UserData, a: PlanAction, today: IsoDate): { ok: boolean; opensOn?: IsoDate } {
@@ -142,6 +147,10 @@ export function applyPlanAction(d: UserData, a: PlanAction, today: IsoDate): { o
     case 'reminder':
       setHabitReminder(d, a.planId, a.habitId, a.time);
       return { ok: true };
+    case 'level':
+      return { ok: setHabitLevel(d, a.planId, a.habitId, a.level, today) };
+    case 'adopt':
+      return { ok: adoptHabit(d, a.planId, a.libraryHabitId, a.newPlanHabitId, today) };
   }
 }
 

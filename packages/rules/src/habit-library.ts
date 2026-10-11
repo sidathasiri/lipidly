@@ -38,13 +38,23 @@ export interface Habit {
   foods?: string[];
   /** A doctor habit with the same key replaces this habit (F4.5). */
   conflictKey?: string;
+  /** Harder versions offered as the habit gets easy (F14.1): level 2, level 3. The habit itself is level 1. */
+  levelUps?: HabitLevel[];
+}
+
+export interface HabitLevel {
+  title: string;
+  shortTitle: string;
+  question: string;
+  /** Extra minutes a day at this level (must still fit the user's free time). */
+  minutes: number;
 }
 
 /**
  * Draft habit library (spec: "Habit library"). Wording awaits clinician and dietitian review.
  * List order is the proposal priority within each focus.
  */
-export const HABIT_LIBRARY_VERSION = 'habits-v1-draft';
+export const HABIT_LIBRARY_VERSION = 'habits-v2-draft';
 
 export const HABIT_LIBRARY: Habit[] = [
   // ── Triglycerides ──
@@ -61,6 +71,10 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 0, effort: 'none' },
     foods: ['King coconut', 'Plain tea', 'Lime juice, no sugar'],
+
+    levelUps: [
+      { title: 'No sugary drinks, and tea without sugar', shortTitle: 'No sugary drinks or sugar in tea', question: 'Did you skip sugary drinks and have your tea without sugar?', minutes: 0 },
+    ],
   },
   {
     id: 'half-rice-dinner',
@@ -75,6 +89,10 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 0, effort: 'none' },
     foods: ['Gotukola mallum', 'Beans curry', 'Bandakka curry', 'Red rice'],
+
+    levelUps: [
+      { title: 'Half the usual rice at lunch and dinner, with more vegetables', shortTitle: 'Half rice at lunch and dinner', question: 'Half your usual rice at lunch and dinner, with more vegetables?', minutes: 0 },
+    ],
   },
   {
     id: 'no-sweets-after-dinner',
@@ -103,6 +121,10 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 30, places: ['outdoors'], effort: 'moderate' },
     conflictKey: 'walk',
+
+    levelUps: [
+      { title: '40 minutes of brisk walking', shortTitle: '40-min brisk walk', question: 'Did you walk briskly for 40 minutes?', minutes: 40 },
+    ],
   },
   {
     id: 'alcohol-free-day',
@@ -147,6 +169,10 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 0, effort: 'none' },
     foods: ['Guava', 'Papaya', 'Orange', 'Peanuts, unsalted'],
+
+    levelUps: [
+      { title: 'Fruit or nuts in place of short eats and biscuits', shortTitle: 'No short eats or biscuits', question: 'Did you have fruit or nuts in place of short eats and biscuits?', minutes: 0 },
+    ],
   },
   {
     id: 'veg-or-dhal-two-meals',
@@ -161,6 +187,10 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 0, effort: 'none' },
     foods: ['Parippu', 'Mukunuwenna mallum', 'Polos curry'],
+
+    levelUps: [
+      { title: 'Vegetables or dhal with every meal', shortTitle: 'Veg or dhal every meal', question: 'Did you have vegetables or dhal with every meal?', minutes: 0 },
+    ],
   },
   {
     id: 'high-fibre-breakfast',
@@ -175,6 +205,10 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 0, effort: 'none' },
     foods: ['Kurakkan roti', 'Oats kanda', 'Red-rice string hoppers'],
+
+    levelUps: [
+      { title: 'A high-fibre breakfast and a pulse at lunch', shortTitle: 'Fibre at breakfast and lunch', question: 'Did you have a high-fibre breakfast and a pulse (dhal, chickpeas or beans) at lunch?', minutes: 0 },
+    ],
   },
   {
     id: 'less-oil-cooking',
@@ -188,6 +222,10 @@ export const HABIT_LIBRARY: Habit[] = [
     question: 'Did you cook with less oil today?',
     timesPerWeek: 7,
     needs: { minutes: 0, effort: 'none', controlsMeals: true },
+
+    levelUps: [
+      { title: 'A teaspoon of oil or less per dish', shortTitle: 'A teaspoon of oil per dish', question: 'Did you cook with a teaspoon of oil or less per dish?', minutes: 0 },
+    ],
   },
   {
     id: 'lighter-eating-out',
@@ -231,6 +269,10 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 30, effort: 'moderate' },
     conflictKey: 'walk',
+
+    levelUps: [
+      { title: '40 minutes of activity', shortTitle: '40 minutes active', question: 'Were you active for 40 minutes today?', minutes: 40 },
+    ],
   },
 
   // ── Short and gentle movement (all focuses) ──
@@ -247,6 +289,11 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 10, places: ['home', 'outdoors'], effort: 'gentle' },
     conflictKey: 'walk',
+
+    levelUps: [
+      { title: 'A 15-minute walk after dinner', shortTitle: '15-min walk after dinner', question: 'Did you walk for 15 minutes after dinner?', minutes: 15 },
+      { title: 'A 20-minute walk after dinner', shortTitle: '20-min walk after dinner', question: 'Did you walk for 20 minutes after dinner?', minutes: 20 },
+    ],
   },
   {
     id: 'take-the-stairs',
@@ -260,6 +307,10 @@ export const HABIT_LIBRARY: Habit[] = [
     question: 'Did you take the stairs today?',
     timesPerWeek: 7,
     needs: { minutes: 5, effort: 'moderate' },
+
+    levelUps: [
+      { title: 'Take the stairs every time', shortTitle: 'Stairs every time', question: 'Did you take the stairs every time today?', minutes: 5 },
+    ],
   },
   {
     id: 'walk-on-calls',
@@ -287,6 +338,11 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 10, places: ['home', 'outdoors'], effort: 'gentle' },
     conflictKey: 'walk',
+
+    levelUps: [
+      { title: 'A 15-minute gentle walk', shortTitle: '15-min gentle walk', question: 'Did you take a 15-minute gentle walk?', minutes: 15 },
+      { title: 'A 20-minute gentle walk', shortTitle: '20-min gentle walk', question: 'Did you take a 20-minute gentle walk?', minutes: 20 },
+    ],
   },
   {
     id: 'home-routine',
@@ -300,6 +356,11 @@ export const HABIT_LIBRARY: Habit[] = [
     question: 'Did you do your 15-minute home routine?',
     timesPerWeek: 7,
     needs: { minutes: 15, places: ['home'], effort: 'moderate' },
+
+    levelUps: [
+      { title: 'A 20-minute home routine', shortTitle: '20-min home routine', question: 'Did you do your 20-minute home routine?', minutes: 20 },
+      { title: 'A 25-minute home routine', shortTitle: '25-min home routine', question: 'Did you do your 25-minute home routine?', minutes: 25 },
+    ],
   },
   {
     id: 'machine-25',
@@ -314,6 +375,10 @@ export const HABIT_LIBRARY: Habit[] = [
     timesPerWeek: 7,
     needs: { minutes: 30, places: ['home'], equipment: ['treadmill', 'bicycle'], effort: 'moderate' },
     conflictKey: 'walk',
+
+    levelUps: [
+      { title: '35 minutes on your machine', shortTitle: '35 min on your machine', question: 'Did you spend 35 minutes on your treadmill or bike?', minutes: 35 },
+    ],
   },
   {
     id: 'gym-or-swim',

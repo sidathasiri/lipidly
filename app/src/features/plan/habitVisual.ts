@@ -34,9 +34,9 @@ const BY_ID: Record<string, { icon: LucideIcon; tone: Tone }> = {
   'gym-or-swim': { icon: Dumbbell, tone: 'sky' },
 };
 
-/** Small label naming where a habit came from: "From your doctor", "Your own", or none for app habits. */
+/** Small label naming where a habit came from: "From your doctor", "Your own", "Habit of the week", or none for core habits. */
 export const habitLabel = (h: Pick<PlanHabit, 'source'>): string | undefined =>
-  h.source === 'doctor' ? 'From your doctor' : h.source === 'own' ? 'Your own' : undefined;
+  h.source === 'doctor' ? 'From your doctor' : h.source === 'own' ? 'Your own' : h.source === 'weekly' ? 'Habit of the week' : undefined;
 
 /** Icon and tile tone for a habit, consistent across Home, Plan, Check-in and summaries. */
 export function habitVisual(h: Pick<PlanHabit, 'source' | 'habitId'>): { icon: LucideIcon; tone: Tone } {

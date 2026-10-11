@@ -1,14 +1,23 @@
-import { addDays, startOfWeek, weeklySummary } from '@lipidly/rules';
+import { levelOfferFor, ratingFor } from '@lipidly/domain';
+import { addDays, startOfWeek, weeklySummary, type Difficulty } from '@lipidly/rules';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { fmtDayMonth, fmtMonth } from '@/lib/format';
+import { rate } from '@/state/actions/engagement';
 import { saveCheckIn } from '@/state/actions/tracking';
 import { useOverview } from '@/state/hooks';
 import { dailyHabits } from '@/state/actions/plan-builder';
 import { today } from '@/state/ids';
-import { Button, Callout, Card, colors, ProgressBar, Screen, ScreenState, Text, TextField, TopBar } from '@/ui';
+import { Button, Callout, Card, ChipGroup, colors, ProgressBar, Screen, ScreenState, Text, TextField, TopBar } from '@/ui';
 
 const BAR_COLORS = [colors.lilacBar, colors.cyanBar, colors.skyBar, colors.primary];
+
+const FEEL_OPTIONS: { value: Difficulty; label: string }[] = [
+  { value: 'easy', label: 'Easy' },
+  { value: 'ok', label: 'OK' },
+  { value: 'hard', label: 'Hard' },
+];
 
 /** Days checked in and how often each habit was kept this week (F5.4, design 10). */
 export default function WeeklySummaryScreen() {
@@ -27,6 +36,7 @@ export default function WeeklySummaryScreen() {
   }
 
   const habits = dailyHabits(data, plan);
+  const core = habits.filter((h) => h.source === 'app');
   const summary = weeklySummary(Object.values(data.checkIns), habits.map((h) => h.id), start);
   const elapsed = Math.min(7, Math.round((Date.parse(t) - Date.parse(start)) / 86400000) + 1);
   const trickiest = habits.filter((h) => h.source === 'app').sort((a, b) => (summary.keptDays[a.id] ?? 0) - (summary.keptDays[b.id] ?? 0))[0];
@@ -65,7 +75,7 @@ export default function WeeklySummaryScreen() {
                 {h.title}
                 {h.source !== 'app' && (
                   <Text variant="small" color="muted">
-                    {h.source === 'doctor' ? ' · doctor' : ' · your own'}
+                    {h.source === 'doctor' ? ' · doctor' : h.source === 'weekly' ? ' · habit of the week' : ' · your own'}
                   </Text>
                 )}
               </Text>
@@ -81,6 +91,25 @@ export default function WeeklySummaryScreen() {
         <Callout tone="tint" mascot="calm">
           {`“${trickiest.title}” was the trickiest this week. If it keeps feeling hard, you can swap it for another that fits.`}
         </Callout>
+      )}
+      {core.length > 0 && (
+        <Card style={{ gap: 12 }}>
+          <View style={{ gap: 2 }}>
+            <Text variant="bodyStrong">How did each habit feel?</Text>
+            <Text variant="small" weight={400} color="muted">
+              Easy habits can level up; hard ones can get easier or be swapped.
+            </Text>
+          </View>
+          {core.map((h) => (
+            <View key={h.id} style={{ gap: 6 }}>
+              <Text variant="label">{h.title}</Text>
+              <ChipGroup dense options={FEEL_OPTIONS} value={ratingFor(data, t, h.id) ? [ratingFor(data, t, h.id)!] : []} onChange={([r]) => r && rate(h.id, r)} />
+            </View>
+          ))}
+          {core.some((h) => levelOfferFor(data, h, t)) && (
+            <Button label="See suggestions on your plan" size="sm" variant="link" onPress={() => router.push('/plan')} style={{ alignSelf: 'flex-start' }} />
+          )}
+        </Card>
       )}
       <Card style={{ gap: 10 }}>
         <Text variant="bodyStrong">

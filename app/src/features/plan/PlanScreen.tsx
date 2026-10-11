@@ -1,10 +1,11 @@
-import { MARKER_LABELS, addDays, weeklySummary } from '@lipidly/rules';
-import { latestMealPlan } from '@lipidly/domain';
+import { MARKER_LABELS, addDays, habitById, habitLevel, maxLevel, weeklySummary } from '@lipidly/rules';
+import { canAdoptWeekly, latestMealPlan, levelOf, levelOfferFor, weeklyHabitFor } from '@lipidly/domain';
 import { router } from 'expo-router';
 import { ChefHat } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { fmtDayMonth, fmtTime, fmtWeekdayDate } from '@/lib/format';
 import { MAX_OWN_HABITS, ownAsPlanHabits } from '@/state/actions/ownHabits';
+import { adoptWeeklyHabit, changeLevel, snoozeLevelOffer } from '@/state/actions/plan';
 import { useOverview } from '@/state/hooks';
 import { today } from '@/state/ids';
 import { AddRow, Button, Callout, Card, Chip, colors, ColouredHeader, ListGroup, ListRow, Screen, ScreenState, Section, StatusChip, Text } from '@/ui';
@@ -41,11 +42,22 @@ export default function PlanScreen() {
   const focus = plan.focus;
   const value = focus && source ? source.values[focus] : undefined;
   const status = focus && source ? source.statuses[focus] : undefined;
+  const t = today();
   const habits = plan.habits.filter((h) => h.committed);
   const own = ownAsPlanHabits(data);
-  const week = weeklySummary(Object.values(data.checkIns), [...habits, ...own].map((h) => h.id), addDays(today(), -6));
-  const keptLine = (id: string, reminder?: string) =>
-    [`Kept ${week.keptDays[id] ?? 0} of 7 days`, reminder ? fmtTime(reminder) : null].filter(Boolean).join(' \u00b7 ');
+  const weekly = weeklyHabitFor(data, t);
+  const week = weeklySummary(Object.values(data.checkIns), [...habits, ...own, ...(weekly ? [weekly] : [])].map((h) => h.id), addDays(t, -6));
+  const keptLine = (id: string, reminder?: string, level?: string) =>
+    [`Kept ${week.keptDays[id] ?? 0} of 7 days`, level, reminder ? fmtTime(reminder) : null].filter(Boolean).join(' \u00b7 ');
+  const levelLabel = (h: (typeof habits)[number]) => {
+    const lib = h.habitId ? habitById(h.habitId) : undefined;
+    return lib && maxLevel(lib) > 1 ? `Level ${levelOf(h)} of ${maxLevel(lib)}` : undefined;
+  };
+  const offers = habits.flatMap((h) => {
+    const offer = levelOfferFor(data, h, t);
+    const lib = h.habitId ? habitById(h.habitId) : undefined;
+    return offer && lib ? [{ h, offer, target: habitLevel(lib, levelOf(h) + (offer === 'up' ? 1 : -1)) }] : [];
+  });
 
   return (
     <Screen
@@ -94,6 +106,23 @@ export default function PlanScreen() {
           No app habits while a doctor reviews your result.
         </Callout>
       )}
+      {offers.map(({ h, offer, target }) => (
+        <Callout
+          key={h.id}
+          tone={offer === 'up' ? 'sky' : 'soft'}
+          title={offer === 'up' ? 'Ready for the next level?' : 'Make it a little easier?'}
+          action={
+            <View style={styles.offerActions}>
+              <Button label={offer === 'up' ? 'Level up' : 'Make it easier'} size="xs" onPress={() => changeLevel(plan.id, h.id, levelOf(h) + (offer === 'up' ? 1 : -1))} />
+              <Button label="Not yet" size="xs" variant="link" onPress={() => snoozeLevelOffer(h.id)} />
+            </View>
+          }
+        >
+          {offer === 'up'
+            ? `You’ve kept “${h.title}” on most days. Next step: “${target.title}”.`
+            : `“${h.title}” has been hard lately. Going back to “${target.title}” for a while is fine.`}
+        </Callout>
+      ))}
       <Section title={plan.mode === 'maintenance' ? 'Habits to keep' : 'Daily habits'}>
         <View style={{ gap: 8 }}>
           {habits.length === 0 && (
@@ -105,12 +134,26 @@ export default function PlanScreen() {
             <HabitRow
               key={h.id}
               habit={h}
-              subtitle={h.source === 'doctor' ? undefined : keptLine(h.id, h.reminderTime)}
+              subtitle={h.source === 'doctor' ? undefined : keptLine(h.id, h.reminderTime, levelLabel(h))}
               onPress={() => router.push({ pathname: '/plan/habit/[id]', params: { id: h.id } })}
             />
           ))}
         </View>
       </Section>
+      {weekly && (
+        <Section title="Habit of the week">
+          <View style={{ gap: 8 }}>
+            <HabitRow habit={weekly} subtitle={`${keptLine(weekly.id)} \u00b7 a new one each week`} onPress={() => router.push({ pathname: '/plan/habit/[id]', params: { id: weekly.id } })} />
+            {canAdoptWeekly(plan) ? (
+              <Button label="Keep it as a daily habit" size="sm" variant="tint" onPress={() => weekly.habitId && adoptWeeklyHabit(plan.id, weekly.habitId)} style={{ alignSelf: 'flex-start' }} />
+            ) : (
+              <Text variant="small" color="muted">
+                Like it? Swap one of your daily habits for it to keep it.
+              </Text>
+            )}
+          </View>
+        </Section>
+      )}
       <Section title="Your own habits">
         <View style={{ gap: 8 }}>
           {own.map((h) => (
@@ -154,4 +197,5 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 2 },
   focusRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   retest: { flexDirection: 'row', alignItems: 'center', borderRadius: 22 },
+  offerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 });

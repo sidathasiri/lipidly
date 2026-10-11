@@ -20,7 +20,9 @@ export type RecordType =
   | 'APPT'
   | 'ESC'
   | 'MEALPLAN'
-  | 'SHOPPING';
+  | 'SHOPPING'
+  | 'WEEKGOAL'
+  | 'REFLECT';
 
 export interface DataRecord {
   sk: string;
@@ -37,7 +39,7 @@ export interface DataRecord {
  * by a Lambda, because it comes from the rule engine or the AI: profile (escalation), reports,
  * plans, doctor habits, prescriptions, escalations and meal plans.
  */
-export const CLIENT_WRITABLE: ReadonlySet<RecordType> = new Set(['SETTINGS', 'CONSENT', 'OWNHABIT', 'CHECKIN', 'MED', 'DOSE', 'APPT', 'SHOPPING']);
+export const CLIENT_WRITABLE: ReadonlySet<RecordType> = new Set(['SETTINGS', 'CONSENT', 'OWNHABIT', 'CHECKIN', 'MED', 'DOSE', 'APPT', 'SHOPPING', 'WEEKGOAL', 'REFLECT']);
 
 export const SK_PREFIX: Record<RecordType, string> = {
   SETTINGS: 'SETTINGS',
@@ -55,6 +57,8 @@ export const SK_PREFIX: Record<RecordType, string> = {
   ESC: 'ESC#',
   MEALPLAN: 'MEALPLAN#',
   SHOPPING: 'SHOPPING#',
+  WEEKGOAL: 'WEEKGOAL#',
+  REFLECT: 'REFLECT#',
 };
 
 /** True when a sort key belongs to its declared type (checked by the server on every write). */
@@ -63,7 +67,13 @@ export const skMatchesType = (sk: string, type: RecordType): boolean =>
 
 /** Every record that represents this user's data. The local draft report is never stored. */
 export function toRecords(d: UserData): DataRecord[] {
-  const out: DataRecord[] = [{ sk: 'SETTINGS', type: 'SETTINGS', data: { onboarded: d.onboarded, reminders: d.reminders, testReminder: d.testReminder ?? null } }];
+  const out: DataRecord[] = [
+    {
+      sk: 'SETTINGS',
+      type: 'SETTINGS',
+      data: { onboarded: d.onboarded, reminders: d.reminders, testReminder: d.testReminder ?? null, celebrated: d.celebrated ?? [], snoozedOffers: d.snoozedOffers ?? {} },
+    },
+  ];
   if (d.consent) out.push({ sk: `CONSENT#${d.consent.givenAt}`, type: 'CONSENT', data: d.consent });
   if (d.profile) out.push({ sk: 'PROFILE', type: 'PROFILE', data: d.profile });
   for (const r of d.reports) out.push({ sk: `REPORT#${r.id}`, type: 'REPORT', data: { ...r, fileUri: undefined } });
@@ -78,6 +88,8 @@ export function toRecords(d: UserData): DataRecord[] {
   for (const e of d.escalations) out.push({ sk: `ESC#${e.id}`, type: 'ESC', data: e });
   for (const p of d.mealPlans ?? []) out.push({ sk: `MEALPLAN#${p.id}`, type: 'MEALPLAN', data: p });
   for (const [planId, checked] of Object.entries(d.shoppingChecked ?? {})) out.push({ sk: `SHOPPING#${planId}`, type: 'SHOPPING', data: { planId, checked } });
+  for (const [week, goal] of Object.entries(d.weeklyGoals ?? {})) out.push({ sk: `WEEKGOAL#${week}`, type: 'WEEKGOAL', data: goal });
+  for (const [week, ratings] of Object.entries(d.reflections ?? {})) out.push({ sk: `REFLECT#${week}`, type: 'REFLECT', data: ratings });
   return out;
 }
 
@@ -95,10 +107,12 @@ export function applyRecords(d: UserData, records: DataRecord[]) {
     switch (r.type) {
       case 'SETTINGS':
         if (v) {
-          const s = v as { onboarded: boolean; reminders: UserData['reminders']; testReminder: string | null };
+          const s = v as { onboarded: boolean; reminders: UserData['reminders']; testReminder: string | null; celebrated?: string[]; snoozedOffers?: Record<string, string> };
           d.onboarded = s.onboarded;
           d.reminders = { ...d.reminders, ...s.reminders };
           d.testReminder = s.testReminder ?? undefined;
+          d.celebrated = s.celebrated ?? [];
+          d.snoozedOffers = s.snoozedOffers ?? {};
         }
         break;
       case 'CONSENT': {
@@ -144,6 +158,18 @@ export function applyRecords(d: UserData, records: DataRecord[]) {
       case 'MEALPLAN':
         d.mealPlans = upsert(d.mealPlans ?? [], (x) => x.id, id, v).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
         break;
+      case 'WEEKGOAL': {
+        const rest = { ...d.weeklyGoals };
+        delete rest[id];
+        d.weeklyGoals = v ? { ...rest, [id]: v } : rest;
+        break;
+      }
+      case 'REFLECT': {
+        const rest = { ...d.reflections };
+        delete rest[id];
+        d.reflections = v ? { ...rest, [id]: v } : rest;
+        break;
+      }
       case 'SHOPPING': {
         const rest = { ...d.shoppingChecked };
         delete rest[id];

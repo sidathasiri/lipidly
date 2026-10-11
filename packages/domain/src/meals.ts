@@ -1,5 +1,5 @@
 import { mealGuidance, type MealGuidance } from '@lipidly/rules';
-import { activePlan, openEscalation } from './plan-builder';
+import { activePlan, openEscalation } from './plans';
 import type { Ingredient, Meal, MealPlan, MealSlot, ShoppingCategory, UserData } from './types';
 
 /** Meal plans (spec F13): a week of meal ideas written by the backend, plus its shopping list. */
