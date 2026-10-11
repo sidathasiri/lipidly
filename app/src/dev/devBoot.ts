@@ -1,5 +1,7 @@
+import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { addDays } from '@lipidly/rules';
+import { signIn } from '@/state/actions/auth';
 import { confirmDraft, setDraft } from '@/state/actions/reports';
 import { newId, today } from '@/state/ids';
 import { loadSampleData } from '@/state/sample-data';
@@ -22,6 +24,35 @@ export function takeDevStartRoute(): string | undefined {
   return DEV_ROUTE;
 }
 const DEV_SCENARIO = __DEV__ ? process.env.EXPO_PUBLIC_DEV_SCENARIO : undefined;
+
+/**
+ * Development only: `EXPO_PUBLIC_DEV_SIGNIN="email password"` signs a real (test) Cognito account
+ * in on launch, for simulators where typing isn't possible. Keep it out of committed files.
+ */
+const DEV_SIGNIN = __DEV__ ? process.env.EXPO_PUBLIC_DEV_SIGNIN : undefined;
+
+/** Development only: `EXPO_PUBLIC_DEV_TOUR="/plan,/plan/meals"` opens each route in turn (8s apart) once signed in, for screenshots. */
+const DEV_TOUR = __DEV__ ? process.env.EXPO_PUBLIC_DEV_TOUR : undefined;
+
+export function useDevTour() {
+  const signedIn = useStore((s) => !!s.session);
+  useEffect(() => {
+    if (!DEV_TOUR || !signedIn) return;
+    const routes = DEV_TOUR.split(',').map((r) => r.trim()).filter(Boolean);
+    let i = 0;
+    const timer = setInterval(() => {
+      if (i >= routes.length) return clearInterval(timer);
+      router.push(routes[i++] as never);
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [signedIn]);
+}
+
+export async function devAutoSignIn() {
+  if (!DEV_SIGNIN || getState().session) return;
+  const [email, password] = DEV_SIGNIN.trim().split(/\s+/);
+  if (email && password) await signIn(email, password).catch((e: Error) => console.warn('dev sign-in failed:', e.message));
+}
 
 const DEV_USER_ID = LOCAL_USER_ID;
 

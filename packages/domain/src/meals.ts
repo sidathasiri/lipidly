@@ -53,6 +53,8 @@ export function toggleShoppingItem(d: UserData, planId: string, key: string) {
   d.shoppingChecked = { ...d.shoppingChecked, [planId]: [...checked] };
 }
 
+const WHOLE_UNITS = new Set<Ingredient['unit']>(['piece', 'clove', 'slice', 'bunch']);
+
 const round = (n: number) => (n >= 10 ? Math.round(n) : Math.round(n * 4) / 4);
 
 /** "2 tbsp", "300 g", "1 piece", "to taste". */
@@ -67,7 +69,7 @@ export interface ShoppingItem {
   /** Stable key for ticking it off: the ingredient name. */
   key: string;
   name: string;
-  /** Totals per unit, e.g. "2 piece · 3 tbsp". */
+  /** Totals per unit, e.g. "3 + 2 tbsp". */
   amount: string;
 }
 
@@ -93,7 +95,8 @@ export function shoppingList(plan: MealPlan): { category: ShoppingCategory; labe
       .map(([name, e]) => ({
         key: name,
         name: name.charAt(0).toUpperCase() + name.slice(1),
-        amount: [...e.totals.entries()].map(([unit, q]) => formatAmount(q, unit)).join(' · '),
+        // Whole items are bought whole: 2.5 carrots → 3.
+        amount: [...e.totals.entries()].map(([unit, q]) => formatAmount(WHOLE_UNITS.has(unit) ? Math.ceil(q) : q, unit)).join(' + '),
       }))
       .sort((a, b) => a.name.localeCompare(b.name)),
   })).filter((s) => s.items.length > 0);

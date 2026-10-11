@@ -6,7 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { DEV_BOOT_ACTIVE, useDevBoot } from '@/dev/devBoot';
+import { DEV_BOOT_ACTIVE, devAutoSignIn, useDevBoot, useDevTour } from '@/dev/devBoot';
 import { restoreSession } from '@/state/actions/auth';
 import { useNotifications } from '@/services/notifications';
 import { useSync } from '@/services/sync';
@@ -35,6 +35,7 @@ export default function RootLayout() {
   const ready = fontsLoaded && hydrated;
   useNotifications();
   useSync();
+  useDevTour();
   const booted = useDevBoot(ready);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function RootLayout() {
 
   // Keep the saved session in step with Cognito (signed out elsewhere, tokens gone, etc.).
   useEffect(() => {
-    if (hydrated && !DEV_BOOT_ACTIVE) restoreSession();
+    if (hydrated && !DEV_BOOT_ACTIVE) restoreSession().then(devAutoSignIn);
   }, [hydrated]);
 
   if (!ready || !booted) return null;
